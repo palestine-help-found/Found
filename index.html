@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Помощь Детям Палестины</title>
+  <title>Palestine Children's Relief Fund</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,20 +12,53 @@
       background-color: #f4f7f6;
       color: #333;
     }
+    
+    /* Google Translate Widget Bar */
+    #translate-bar {
+      background-color: #000;
+      color: white;
+      text-align: center;
+      padding: 8px;
+      font-size: 0.85rem;
+    }
+    #google_translate_element {
+      display: inline-block;
+      margin-left: 10px;
+    }
+
     header {
       background-color: #1b4332;
       color: white;
       text-align: center;
-      padding: 2rem 1rem;
+      padding: 2.5rem 1rem 2rem;
     }
+    .logo-img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      margin-bottom: 15px;
+    }
+    header h1 {
+      margin: 10px 0 5px;
+      font-size: 2.2rem;
+    }
+    header p {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #b7e4c7;
+    }
+
     .container {
       max-width: 800px;
       margin: 20px auto;
-      padding: 20px;
+      padding: 25px;
       background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
     }
+
     .counter-box {
       background-color: #e8f5e9;
       border: 2px solid #2e7d32;
@@ -37,58 +70,102 @@
     .counter-box h2 {
       margin: 0;
       color: #2e7d32;
-      font-size: 2rem;
+      font-size: 2.2rem;
     }
+
     .article-content {
       line-height: 1.6;
       font-size: 1.1rem;
     }
+    
     .donation-card {
       background-color: #f9f9f9;
       border-left: 5px solid #d9534f;
-      padding: 15px;
+      padding: 20px;
       margin-top: 25px;
+      border-radius: 4px;
     }
     .card-number {
       font-weight: bold;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
       letter-spacing: 1px;
+      color: #1b4332;
+      word-break: break-all;
+    }
+
+    .contact-btn {
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+      background-color: #0088cc;
+      color: white;
+      text-decoration: none;
+      padding: 14px 0;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      margin-top: 20px;
+      box-sizing: border-box;
+      transition: background-color 0.2s;
+    }
+    .contact-btn:hover {
+      background-color: #006699;
     }
   </style>
+
+  <!-- Google Translate Script -->
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'en'}, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 </head>
 <body>
 
+  <!-- Google Translate Bar -->
+  <div id="translate-bar">
+    Language: <div id="google_translate_element"></div>
+  </div>
+
   <header>
-    <h1>Фонд помощи детям Палестины</h1>
-    <p>Каждый цент имеет значение</p>
+    <!-- Logo Generator Link -->
+    <img src="https://raw.githubusercontent.com/palestine-help-fond/Found/main/logo.jpg" alt="Palestine Help Fund Logo" class="logo-img" onerror="this.src='https://via.placeholder.com/120/1b4332/FFFFFF?text=Fund+Logo';">
+    <h1>Palestine Children's Relief Fund</h1>
+    <p>Every Cent Matters</p>
   </header>
 
   <div class="container">
     
-    <!-- Счетчик сборов -->
+    <!-- Fundraising Counter -->
     <div class="counter-box">
-      <p style="margin: 0 0 5px 0; font-size: 0.9rem; color: #555;">Собрано на данный момент:</p>
+      <p style="margin: 0 0 5px 0; font-size: 0.95rem; color: #555;">Total Raised So Far:</p>
       <h2>$102 USD</h2>
     </div>
 
-    <!-- Статья -->
+    <!-- Article -->
     <div class="article-content">
-      <h2>Каждая секунда и каждый цент спасают жизни</h2>
+      <h2>Every Second and Every Cent Saves Lives</h2>
       <p>
-        Сегодня дети в Палестине проходят через испытания, которые не должен переживать ни один ребенок в мире. Они лишены самых базовых вещей: чистой питьевой воды, горячего питания, необходимых медикаментов и ощущения безопасности.
+        Today, children in Palestine are going through hardships that no child in the world should ever face. They are deprived of the most basic necessities: clean drinking water, hot meals, essential medicines, and a basic sense of safety.
       </p>
       <p>
-        В условиях кризиса даже небольшая сумма играет огромную роль. <strong>Каждый цент важен.</strong> То, что может показаться незначительным для нас, там превращается в стакан чистой воды, буханку хлеба или жизненно важное лекарство. Ваша поддержка — это не просто деньги, это надежда для детей на то, что о них не забыли.
+        In times of crisis, even small contributions play a massive role. <strong>Every cent matters.</strong> What might seem insignificant to us turns into a cup of clean water, a loaf of bread, or life-saving medication for a child over there. Your support is not just money — it is hope for children that they are not forgotten.
       </p>
-      <p><i>"Every dollar brings hope and saves lives. Families in Palestine urgently need food, clean water, and medical aid. Your generosity makes an immediate difference—donate today and help rebuild lives!"</i></p>
+      <p style="background-color: #f0f7f4; padding: 15px; border-radius: 6px; font-style: italic; border-left: 3px solid #2e7d32;">
+        "Every dollar brings hope and saves lives. Families in Palestine urgently need food, clean water, and medical aid. Your generosity makes an immediate difference — donate today and help rebuild lives!"
+      </p>
     </div>
 
-    <!-- Реквизиты -->
+    <!-- Payment Details -->
     <div class="donation-card">
-      <h3>Как сделать пожертвование:</h3>
-      <p>Вы можете перевести любую сумму напрямую на карту фонда:</p>
+      <h3 style="margin-top: 0;">How to Donate:</h3>
+      <p>You can transfer any amount directly to the fund's card:</p>
       <p class="card-number">💳 VISA: 4713 3800 1941 6631</p>
     </div>
+
+    <!-- Contact Button -->
+    <a href="https://t.me/your_telegram" target="_blank" class="contact-btn">💬 Contact Support / Ask Questions</a>
 
   </div>
 
