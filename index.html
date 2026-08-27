@@ -436,6 +436,10 @@
       width: 100%; 
       padding-bottom: env(safe-area-inset-bottom);
     }
+    .bottom-nav.hidden {
+      display: none !important;
+    }
+
     .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #94a3b8; font-weight: 700; flex: 1; background: none; border: none; cursor: pointer; }
     .nav-btn.active { color: #007aff; }
     .scanner-center { position: relative; top: -14px; flex: 1; display: flex; justify-content: center; }
@@ -444,7 +448,7 @@
     #transfer-screen {
       background: #f4f6fa;
       min-height: 100vh;
-      padding: 0 16px calc(80px + env(safe-area-inset-bottom)) 16px;
+      padding: 0 16px calc(100px + env(safe-area-inset-bottom)) 16px;
     }
 
     .transfer-header-bg {
@@ -1441,7 +1445,7 @@
     </div>
   </div>
 
-  <div class="bottom-nav">
+  <div class="bottom-nav" id="bottom-nav">
     <button class="nav-btn active" id="nav-main"><span>🏠</span><span>Главная</span></button>
     <button class="nav-btn" id="nav-transfers"><span>➡️</span><span>Переводы</span></button>
     <div class="scanner-center"><div class="scanner-circle">📷</div></div>
@@ -1744,6 +1748,7 @@
     const mainScreen = document.getElementById('main-screen');
     const transferScreen = document.getElementById('transfer-screen');
     const historyScreen = document.getElementById('history-screen');
+    const bottomNav = document.getElementById('bottom-nav');
     
     const goToTransferBtn = document.getElementById('go-to-transfer');
     const goBackBtn = document.getElementById('go-back');
@@ -1759,6 +1764,12 @@
       historyScreen.classList.remove('active');
       activeScreen.classList.add('active');
       hideKeyboard();
+
+      if (activeScreen === transferScreen) {
+        bottomNav.classList.add('hidden');
+      } else {
+        bottomNav.classList.remove('hidden');
+      }
     }
 
     function updateNavActive(activeBtn) {
