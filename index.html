@@ -535,11 +535,84 @@
       width: 100%;
     }
 
-    /* ЭКРАН ИСТОРИИ */
+    /* ЭКРАН ИСТОРИИ (НОВЫЙ ДИЗАЙН С ВКЛАДКАМИ) */
     #history-screen {
       background: #f4f6fa;
       min-height: 100vh;
-      padding: 0 16px calc(80px + env(safe-area-inset-bottom)) 16px;
+      padding: 0 0 calc(80px + env(safe-area-inset-bottom)) 0;
+    }
+
+    /* Верхние вкладки Операции / Выписка */
+    .history-tabs-header {
+      display: flex;
+      background: #ffffff;
+      position: relative;
+      border-bottom: 1px solid #e2e8f0;
+      padding-top: env(safe-area-inset-top);
+    }
+
+    .history-tab {
+      flex: 1;
+      text-align: center;
+      padding: 14px 0;
+      font-size: 15px;
+      font-weight: 700;
+      color: #94a3b8;
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .history-tab.active {
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    /* Синяя полоска подчеркивания активной вкладки */
+    .history-tab-indicator {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 50%;
+      height: 3px;
+      background: #007aff;
+      border-radius: 3px 3px 0 0;
+      transition: transform 0.3s ease;
+    }
+
+    .history-screen-body {
+      padding: 12px 16px;
+    }
+
+    /* Строка обновления истории */
+    .history-update-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .history-update-row svg {
+      width: 14px;
+      height: 14px;
+      fill: #007aff;
+      cursor: pointer;
+    }
+
+    /* Плашка "Сегодня" */
+    .history-date-badge {
+      display: inline-block;
+      background: #e2e8f0;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 16px;
+      margin-bottom: 12px;
     }
 
     .history-list {
@@ -565,26 +638,14 @@
 
     .history-left {
       display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .history-icon-box {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #ecfdf5;
-      color: #10b981;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-    }
-
-    .history-info {
-      display: flex;
       flex-direction: column;
       gap: 2px;
+    }
+
+    .history-card-num {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
     }
 
     .history-title {
@@ -606,24 +667,59 @@
       gap: 2px;
     }
 
+    .history-sum-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
     .history-sum {
       font-size: 14px;
       font-weight: 800;
       color: #0f172a;
     }
 
-    .history-status {
-      font-size: 10px;
-      font-weight: 700;
+    .history-check-icon {
+      font-size: 12px;
       color: #10b981;
+    }
+
+    .history-time {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+
+    /* Кнопка "Загрузить ещё" */
+    .load-more-btn {
+      width: 100%;
+      background: #ff8c42;
+      border: none;
+      border-radius: 16px;
+      padding: 15px;
+      color: white;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 16px;
+      box-shadow: 0 4px 14px rgba(255, 140, 66, 0.3);
     }
 
     .history-empty {
       text-align: center;
       color: #94a3b8;
       font-size: 14px;
-      margin-top: 40px;
+      margin-top: 30px;
       font-weight: 600;
+    }
+
+    /* Содержимое вкладок истории */
+    .history-tab-pane {
+      display: none;
+    }
+    .history-tab-pane.active {
+      display: block;
     }
 
     /* МОДАЛЬНОЕ ОКНО */
@@ -1190,16 +1286,42 @@
 
 
   <div id="history-screen" class="screen">
-    <div class="transfer-header-bg" style="margin-bottom: 16px;">
-      <div class="transfer-header">
-        <div style="width: 24px;"></div>
-        <span class="transfer-title">История платежей</span>
-        <div style="width: 24px;"></div>
+    <!-- Шапка с переключением вкладки Операции / Выписка -->
+    <div class="history-tabs-header">
+      <button class="history-tab active" id="tab-operations">Операции</button>
+      <button class="history-tab" id="tab-statement">Выписка</button>
+      <div class="history-tab-indicator" id="history-tab-indicator"></div>
+    </div>
+
+    <!-- Вкладка: Операции -->
+    <div class="history-tab-pane active" id="pane-operations">
+      <div class="history-screen-body">
+        <div class="history-update-row">
+          <span>Обновлено: <span id="history-update-time">27.08.26 - 12:41</span></span>
+          <svg viewBox="0 0 24 24" id="history-refresh-btn"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        </div>
+
+        <div style="text-align: center;">
+          <div class="history-date-badge">Сегодня</div>
+        </div>
+
+        <div class="history-list" id="history-list-container">
+          <div class="history-empty">У вас пока нет истории переводов</div>
+        </div>
+
+        <button class="load-more-btn" id="load-more-btn">Загрузить ещё</button>
       </div>
     </div>
 
-    <div class="history-list" id="history-list-container">
-      <div class="history-empty">У вас пока нет истории переводов</div>
+    <!-- Вкладка: Выписка (чистая, как на картине) -->
+    <div class="history-tab-pane" id="pane-statement">
+      <div class="history-screen-body">
+        <div class="history-update-row">
+          <span>Обновлено: <span id="statement-update-time">27.08.26 - 12:41</span></span>
+          <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        </div>
+        <!-- Выписка пустая и чистая -->
+      </div>
     </div>
   </div>
 
@@ -1517,6 +1639,31 @@
       });
     }
 
+    // Переключение вкладок «Операции» и «Выписка» на экране истории
+    const tabOperations = document.getElementById('tab-operations');
+    const tabStatement = document.getElementById('tab-statement');
+    const paneOperations = document.getElementById('pane-operations');
+    const paneStatement = document.getElementById('pane-statement');
+    const tabIndicator = document.getElementById('history-tab-indicator');
+
+    if (tabOperations && tabStatement) {
+      tabOperations.addEventListener('click', () => {
+        tabOperations.classList.add('active');
+        tabStatement.classList.remove('active');
+        paneOperations.classList.add('active');
+        paneStatement.classList.remove('active');
+        tabIndicator.style.transform = 'translateX(0%)';
+      });
+
+      tabStatement.addEventListener('click', () => {
+        tabStatement.classList.add('active');
+        tabOperations.classList.remove('active');
+        paneStatement.classList.add('active');
+        paneOperations.classList.remove('active');
+        tabIndicator.style.transform = 'translateX(100%)';
+      });
+    }
+
     const barItems = document.querySelectorAll('.bar-item');
     barItems.forEach(item => {
       item.addEventListener('click', () => {
@@ -1619,8 +1766,6 @@
       });
     }
 
-    let lastTx = null;
-
     if (modalFinalBtn) {
       modalFinalBtn.addEventListener('click', () => {
         const now = new Date();
@@ -1642,7 +1787,7 @@
 
         // ---- СПИСАНИЕ ДЕНЕГ ----
         currentBalance -= rawSum;
-        if (currentBalance < 0) currentBalance = 0; // На всякий случай
+        if (currentBalance < 0) currentBalance = 0;
         updateBalanceDisplay();
 
         pendingPhone.textContent = phoneVal;
@@ -1655,8 +1800,6 @@
         successDate.textContent = dateStrShort;
         successTime.textContent = timeStr;
 
-                // Убираем лишнюю девятку, если пользователь случайно ввел её или она дублируется, 
-        // чтобы остался только чистый префикс 992 и номер
         let cleanPhone = phoneVal.trim();
         if (cleanPhone.startsWith('9929')) {
           cleanPhone = '992' + cleanPhone.slice(4);
@@ -1664,20 +1807,19 @@
           cleanPhone = '992' + cleanPhone;
         }
 
-        lastTx = {
+        const newTx = {
           title: 'DC (по номеру телефона)',
-          subtitle: `${cleanPhone} • ${dateStrShort} ${timeStr}`,
-          sum: `-${sumVal} TJS`,
-          status: 'Выполнено',
+          cardNumber: '4713***6631',
+          receiver: cleanPhone,
+          sum: `${sumVal} TJS`,
+          time: timeStr,
           fullDate: dateStrFull,
           fullTime: timeStr,
           opNum: opNumber,
-          receiver: `${cleanPhone}`,
-          sumVal: `${sumVal}`
+          sumVal: `${sumVal} TJS`
         };
 
-
-        transactionHistory.unshift(lastTx);
+        transactionHistory.unshift(newTx);
         renderHistory();
 
         viewConfirm.classList.remove('active');
@@ -1703,22 +1845,23 @@
         html += `
           <div class="history-item" data-index="${index}">
             <div class="history-left">
-              <div class="history-icon-box">✓</div>
-              <div class="history-info">
-                <span class="history-title">${item.title}</span>
-                <span class="history-subtitle">${item.subtitle}</span>
-              </div>
+              <span class="history-card-num">${item.cardNumber}</span>
+              <span class="history-title">${item.receiver}</span>
+              <span class="history-subtitle">${item.title}</span>
             </div>
             <div class="history-right">
-              <span class="history-sum">${item.sum}</span>
-              <span class="history-status">${item.status}</span>
+              <div class="history-sum-row">
+                <span class="history-sum">${item.sum}</span>
+                <span class="history-check-icon">✓</span>
+              </div>
+              <span class="history-time">${item.time}</span>
             </div>
           </div>
         `;
       });
       historyListContainer.innerHTML = html;
 
-      // Привязываем клик по элементу истории для открытия чека
+      // Клик по элементу истории открывает детальный чек (синхронизация с чеками)
       document.querySelectorAll('.history-item').forEach(el => {
         el.addEventListener('click', () => {
           const idx = el.getAttribute('data-index');
@@ -1744,7 +1887,6 @@
       modalMainMenuBtn.addEventListener('click', () => {
         confirmationModal.classList.remove('visible');
         
-        // Очищаем форму
         inputPhone.value = '';
         inputSum.value = '';
         inputComment.value = '';
@@ -1799,7 +1941,7 @@
 
     function hideKeyboard() {
       customKeyboard.classList.remove('visible');
-      defaultNextContainer.classList.remove('hidden');
+      defaultNextContainer.classList.add('hidden');
       inputBoxes.forEach(b => b.classList.remove('focused'));
       activeInput = null;
       activeCaret = null;
@@ -1860,6 +2002,12 @@
       if (timeDisplay) {
         timeDisplay.textContent = `${dd}.${mm}.${yy} - ${hh}:${min}:${ss}`;
       }
+
+      const historyUpdateTime = document.getElementById('history-update-time');
+      const statementUpdateTime = document.getElementById('statement-update-time');
+      const formattedHistoryTime = `${dd}.${mm}.${yy} - ${hh}:${min}`;
+      if (historyUpdateTime) historyUpdateTime.textContent = formattedHistoryTime;
+      if (statementUpdateTime) statementUpdateTime.textContent = formattedHistoryTime;
     }
 
     updateTime();
