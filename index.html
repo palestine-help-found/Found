@@ -1,2259 +1,2353 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#f4f6fa">
-  
-  <title>DC Wallet - Transfer & History</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-    }
-
-    /* ЭКРАН БЛОКИРОВКИ (PIN-код) */
-    #lock-screen {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: #f4f6fa;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-      transition: opacity 0.3s ease;
-    }
-    #lock-screen.hidden {
-      opacity: 0;
-      pointer-events: none;
-    }
-    .lock-logo {
-      width: 64px;
-      height: 64px;
-      background: #007aff;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 900;
-      font-size: 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
-    }
-    .lock-title {
-      font-size: 18px;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 6px;
-    }
-    .lock-subtitle {
-      font-size: 13px;
-      color: #64748b;
-      font-weight: 600;
-      margin-bottom: 30px;
-      text-align: center;
-    }
-    .pin-dots {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-    .pin-dot {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: #cbd5e1;
-      transition: background 0.2s, transform 0.2s;
-    }
-    .pin-dot.filled {
-      background: #007aff;
-      transform: scale(1.1);
-    }
-    .pin-keyboard {
-      display: grid;
-      grid-template-columns: repeat(3, 76px);
-      gap: 16px;
-    }
-    .pin-key {
-      height: 76px;
-      background: #ffffff;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      font-weight: 700;
-      color: #0f172a;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-      user-select: none;
-      transition: background 0.1s, transform 0.1s;
-    }
-    .pin-key:active {
-      background: #e2e8f0;
-      transform: scale(0.95);
-    }
-    .pin-key.action-key {
-      background: transparent;
-      box-shadow: none;
-      font-size: 16px;
-      color: #64748b;
-    }
-
-    body {
-      background-color: #f4f6fa;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-    }
-
-    .app-container {
-      width: 100%;
-      max-width: 100%;
-      background: #f4f6fa;
-      position: relative;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    .screen {
-      display: none;
-    }
-    .screen.active {
-      display: block;
-    }
-
-    #main-screen {
-      padding: calc(12px + env(safe-area-inset-top)) 16px calc(80px + env(safe-area-inset-bottom)) 16px;
-    }
-
-    .top-nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      padding: 2px 0;
-    }
-
-    .top-nav-left svg, .top-nav-right svg {
-      width: 24px;
-      height: 24px;
-      fill: #2563eb;
-    }
-
-    .top-nav-right {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-    }
-
-    .top-nav-right svg {
-      width: 22px;
-      height: 22px;
-    }
-
-    .balance-container {
-      display: flex;
-      gap: 10px;
-      align-items: stretch;
-      width: 100%;
-      margin-bottom: 16px;
-    }
-
-    .balance-blue-card {
-      flex: 1;
-      background-color: #007aff;
-      border-radius: 22px;
-      padding: 24px 20px 22px 20px;
-      color: #ffffff;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.2);
-    }
-
-    .balance-left {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      position: relative;
-    }
-
-    .balance-amount-row {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      position: relative;
-    }
-
-    .amount-wrapper {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .balance-amount {
-      font-size: 34px;
-      font-weight: 700;
-      line-height: 1;
-      letter-spacing: -0.5px;
-      transition: opacity 0.2s ease;
-    }
-
-    .balance-amount.hidden-mode {
-      opacity: 0.8;
-      letter-spacing: 2px;
-    }
-
-    .balance-currency {
-      font-size: 15px;
-      font-weight: 700;
-      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .is-loading .balance-currency {
-      transform: translateX(18px); 
-    }
-
-    .timestamp-wrapper {
-      position: relative;
-      margin-top: 10px;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .balance-timestamp {
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(255, 255, 255, 0.85);
-      letter-spacing: 0.2px;
-      transition: opacity 0.2s ease;
-    }
-
-    .skeleton {
-      position: absolute;
-      top: 50%;
-      left: 0;
-      transform: translateY(-50%);
-      background: rgba(255, 255, 255, 0.25);
-      border-radius: 20px;
-      overflow: hidden;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease;
-    }
-
-    .skeleton-amount {
-      width: 100px;
-      height: 32px;
-      border-radius: 12px;
-    }
-
-    .skeleton-date {
-      width: 140px;
-      height: 14px;
-      border-radius: 7px;
-    }
-
-    .skeleton::after {
-      content: "";
-      position: absolute;
-      top: 0; right: 0; bottom: 0; left: 0;
-      transform: translateX(-100%);
-      background-image: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0,
-        rgba(255, 255, 255, 0.4) 50%,
-        rgba(255, 255, 255, 0) 100%
-      );
-      animation: shimmer 1.2s infinite ease-in-out;
-    }
-
-    @keyframes shimmer {
-      100% { transform: translateX(100%); }
-    }
-
-    .is-loading .balance-amount,
-    .is-loading .balance-timestamp {
-      opacity: 0 !important;
-    }
-
-    .is-loading .skeleton {
-      opacity: 1 !important;
-    }
-
-    .balance-right-actions {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-top: 4px;
-    }
-
-    .action-svg-btn {
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      width: 22px;
-      height: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .action-svg-btn svg {
-      width: 100%;
-      height: 100%;
-      fill: #ffffff;
-      position: absolute;
-      transition: transform 0.4s ease, opacity 0.2s ease;
-    }
-
-    .icon-spinner {
-      opacity: 0;
-      transform: rotate(0deg);
-    }
-
-    .action-svg-btn.is-refreshing .icon-refresh {
-      opacity: 0;
-      transform: rotate(180deg);
-    }
-
-    .action-svg-btn.is-refreshing .icon-spinner {
-      opacity: 1;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      100% { transform: rotate(360deg); }
-    }
-
-    .balance-qr-card { width: 62px; background-color: #ffffff; border-radius: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); }
-    .balance-qr-card svg { width: 26px; height: 26px; fill: #007aff; }
-    
-    .phone-card { width: 106px; height: 90px; background: #ffffff; border-radius: 20px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 18px; cursor: pointer; }
-    .phone-icon { width: 34px; height: 34px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #007aff; margin-bottom: 6px; }
-    .phone-text { font-size: 10px; font-weight: 700; color: #0f172a; line-height: 1.2; }
-
-    .chart-card {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-    }
-    .chart-header {
-      font-size: 13px;
-      font-weight: 800;
-      color: #0f172a;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .chart-bars {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      height: 90px;
-      padding-top: 10px;
-    }
-    .bar-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      flex: 1;
-    }
-    .bar-column {
-      width: 22px;
-      background: #e2e8f0;
-      border-radius: 6px;
-    }
-    .bar-item.active .bar-column {
-      background: #007aff;
-    }
-    .bar-label {
-      font-size: 10px;
-      color: #94a3b8;
-      font-weight: 700;
-    }
-    .bar-item.active .bar-label {
-      color: #007aff;
-    }
-
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .section-title { font-size: 14px; font-weight: 800; color: #0f172a; }
-    .see-all { font-size: 13px; color: #007aff; font-weight: 700; text-decoration: none; }
-    .pills-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 2px; }
-    .pills-container::-webkit-scrollbar { display: none; }
-    .pill-item { background: #ffffff; border-radius: 22px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 13px; font-weight: 700; color: #0f172a; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
-    .pill-badge { width: 26px; height: 26px; border-radius: 8px; background: #007aff; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
-    .services-row { background: #ffffff; border-radius: 20px; padding: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 14px; }
-    .service-item { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
-    .service-item:not(:last-child) { border-right: 1px solid #f1f5f9; }
-    .service-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
-    .service-name { font-size: 12px; font-weight: 800; color: #0f172a; }
-    
-    .grid-2 { display: grid; grid-template-columns: 1.8fr 1fr; gap: 10px; margin-bottom: 10px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
-    .card { background: #ffffff; padding: 12px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; min-height: 85px; }
-    .card-title { font-size: 12px; font-weight: 800; color: #0f172a; }
-    .card-sub { font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
-    
-    .card-img-placeholder { 
-      width: 28px; 
-      height: 28px; 
-      border-radius: 8px; 
-      align-self: flex-end; 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .bottom-nav { 
-      position: fixed; 
-      bottom: 0; 
-      left: 0; 
-      right: 0; 
-      height: calc(68px + env(safe-area-inset-bottom)); 
-      background: #ffffff; 
-      display: flex; 
-      justify-content: space-around; 
-      align-items: center; 
-      border-top: 1px solid #e2e8f0; 
-      z-index: 100; 
-      width: 100%; 
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-    .bottom-nav.hidden {
-      display: none !important;
-    }
-
-    .nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #94a3b8; font-weight: 700; flex: 1; background: none; border: none; cursor: pointer; }
-    .nav-btn.active { color: #007aff; }
-    .scanner-center { position: relative; top: -14px; flex: 1; display: flex; justify-content: center; }
-    .scanner-circle { width: 52px; height: 52px; background: #007aff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35); }
-
-    #transfer-screen {
-      background: #f4f6fa;
-      min-height: 100vh;
-      padding: 0 16px calc(100px + env(safe-area-inset-bottom)) 16px;
-    }
-
-    .transfer-header-bg {
-      background: #007aff;
-      margin: 0 -16px 14px -16px;
-      padding: calc(14px + env(safe-area-inset-top)) 16px 12px 16px;
-      border-radius: 0 0 20px 20px;
-    }
-
-    .transfer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .transfer-back {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 20px;
-      color: #ffffff;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-    }
-    .transfer-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: #ffffff;
-    }
-    .transfer-star {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 22px;
-      color: #ffffff;
-    }
-
-    .transfer-input-box {
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-      font-size: 14px;
-      color: #94a3b8;
-      font-weight: 600;
-      cursor: pointer;
-      position: relative;
-      border: 2px solid transparent;
-      transition: border-color 0.2s;
-    }
-    
-    .input-wrapper-inner {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .transfer-input-box input {
-      border: none;
-      outline: none;
-      font-size: 14px;
-      width: 100%;
-      background: transparent;
-      color: #0f172a;
-      font-weight: 600;
-      pointer-events: none;
-      text-align: left;
-    }
-    .transfer-input-box input::placeholder {
-      color: #94a3b8;
-    }
-
-    .custom-caret {
-      display: none;
-      position: absolute;
-      left: 16px;
-      width: 2px;
-      height: 18px;
-      background-color: #007aff;
-      animation: blink 1s infinite;
-      pointer-events: none;
-    }
-    
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
-    }
-
-    .transfer-input-box.focused .custom-caret {
-      display: block;
-    }
-
-    .transfer-input-icons {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-shrink: 0;
-      margin-left: 10px;
-    }
-    .transfer-input-icons svg {
-      width: 20px;
-      height: 20px;
-      fill: #007aff;
-      cursor: pointer;
-    }
-
-    .check-btn {
-      width: 100%;
-      background: #eef2ff;
-      border: 1.5px solid rgba(0, 122, 255, 0.35);
-      border-radius: 14px;
-      padding: 15px;
-      color: #007aff;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-    }
-
-    .min-sum {
-      font-size: 12px;
-      color: #94a3b8;
-      font-weight: 700;
-      text-align: right;
-      margin-bottom: 12px;
-      margin-right: 4px;
-    }
-
-    .single-card-wrapper {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 14px;
-    }
-
-    .single-account-card {
-      background: #007aff;
-      border-radius: 20px;
-      padding: 14px 16px;
-      color: white;
-      width: 120px;
-      height: 86px;
-      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .single-account-card .card-top {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      color: rgba(255, 255, 255, 0.9);
-    }
-    .single-account-card .card-sum {
-      font-size: 13px;
-      font-weight: 800;
-    }
-
-    .transfer-notice {
-      font-size: 12px;
-      color: #64748b;
-      line-height: 1.45;
-      font-weight: 600;
-      margin-bottom: 20px;
-      width: 100%;
-    }
-
-    #history-screen {
-      background: #f4f6fa;
-      min-height: 100vh;
-      padding: 0 0 calc(80px + env(safe-area-inset-bottom)) 0;
-    }
-
-    .history-tabs-header {
-      display: flex;
-      background: #ffffff;
-      position: relative;
-      border-bottom: 1px solid #e2e8f0;
-      padding-top: env(safe-area-inset-top);
-    }
-
-    .history-tab {
-      flex: 1;
-      text-align: center;
-      padding: 14px 0;
-      font-size: 15px;
-      font-weight: 700;
-      color: #94a3b8;
-      background: none;
-      border: none;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .history-tab.active {
-      color: #0f172a;
-      font-weight: 800;
-    }
-
-    .history-tab-indicator {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 50%;
-      height: 3px;
-      background: #007aff;
-      border-radius: 3px 3px 0 0;
-      transition: transform 0.3s ease;
-    }
-
-    .history-screen-body {
-      padding: 12px 16px;
-    }
-
-    .history-update-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      font-size: 12px;
-      color: #64748b;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-    .history-update-row svg {
-      width: 14px;
-      height: 14px;
-      fill: #007aff;
-      cursor: pointer;
-    }
-
-    .history-date-badge {
-      display: inline-block;
-      background: #e2e8f0;
-      color: #475569;
-      font-size: 12px;
-      font-weight: 700;
-      padding: 6px 14px;
-      border-radius: 16px;
-      margin-bottom: 12px;
-    }
-
-    .history-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .history-item {
-      background: #ffffff;
-      border-radius: 16px;
-      padding: 14px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-    .history-item:active {
-      transform: scale(0.98);
-    }
-
-    .history-left {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .history-card-num {
-      font-size: 11px;
-      color: #94a3b8;
-      font-weight: 600;
-    }
-
-    .history-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: #0f172a;
-    }
-
-    .history-subtitle {
-      font-size: 11px;
-      color: #94a3b8;
-      font-weight: 600;
-    }
-
-    .history-right {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 2px;
-    }
-
-    .history-sum-row {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .history-sum {
-      font-size: 14px;
-      font-weight: 800;
-      color: #0f172a;
-    }
-
-    .history-check-icon {
-      font-size: 12px;
-      color: #10b981;
-    }
-
-    .history-time {
-      font-size: 11px;
-      font-weight: 600;
-      color: #94a3b8;
-    }
-
-    .load-more-btn {
-      width: 100%;
-      background: #ff8c42;
-      border: none;
-      border-radius: 16px;
-      padding: 15px;
-      color: white;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-      text-align: center;
-      margin-top: 16px;
-      box-shadow: 0 4px 14px rgba(255, 140, 66, 0.3);
-    }
-
-    .history-empty {
-      text-align: center;
-      color: #94a3b8;
-      font-size: 14px;
-      margin-top: 30px;
-      font-weight: 600;
-    }
-
-    .history-tab-pane {
-      display: none;
-    }
-    .history-tab-pane.active {
-      display: block;
-    }
-
-    .confirmation-modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 2000;
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-    }
-
-    .confirmation-modal.visible {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .modal-content {
-      width: 100%;
-      max-width: 100%;
-      background: #ffffff;
-      border-top-left-radius: 24px;
-      border-top-right-radius: 24px;
-      padding: 18px 20px calc(36px + env(safe-area-inset-bottom)) 20px;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
-      transform: translateY(100%);
-      transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-      max-height: 90vh;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .confirmation-modal.visible .modal-content {
-      transform: translateY(0);
-    }
-
-    .modal-handle {
-      width: 36px;
-      height: 4px;
-      background: #cbd5e1;
-      border-radius: 2px;
-      margin: 0 auto 16px auto;
-    }
-
-    .modal-subtitle {
-      font-size: 13px;
-      color: #94a3b8;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .modal-sum-title {
-      font-size: 26px;
-      font-weight: 800;
-      color: #007aff;
-      margin-bottom: 24px;
-    }
-
-    .modal-details {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .modal-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-    }
-
-    .modal-label {
-      color: #64748b;
-      font-weight: 600;
-    }
-
-    .modal-value {
-      color: #0f172a;
-      font-weight: 800;
-    }
-
-    .modal-confirm-btn {
-      width: 100%;
-      background: #007aff;
-      border: none;
-      border-radius: 16px;
-      padding: 16px;
-      color: white;
-      font-size: 16px;
-      font-weight: 800;
-      cursor: pointer;
-      text-align: center;
-      box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
-    }
-
-    .receipt-view {
-      display: none;
-      flex-direction: column;
-      width: 100%;
-    }
-    .receipt-view.active {
-      display: flex;
-    }
-
-    .receipt-bank-header {
-      text-align: right;
-      margin-bottom: 16px;
-    }
-    .receipt-bank-name {
-      font-size: 13px;
-      font-weight: 800;
-      color: #0f172a;
-    }
-    .receipt-bank-info {
-      font-size: 11px;
-      color: #64748b;
-      font-weight: 600;
-      margin-top: 2px;
-    }
-
-    .receipt-logo-block {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
-    .receipt-logo-img {
-      width: 36px;
-      height: 36px;
-      background: #007aff;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 900;
-      font-size: 14px;
-    }
-    .receipt-logo-text {
-      font-size: 14px;
-      font-weight: 800;
-      color: #007aff;
-      line-height: 1.1;
-    }
-
-    .receipt-badge-box {
-      border: 1.5px solid #007aff;
-      border-radius: 12px;
-      padding: 10px;
-      text-align: center;
-      margin: 20px 0;
-      background: #f8fafc;
-      transition: all 0.2s ease;
-    }
-    .receipt-badge-title {
-      font-size: 9px;
-      color: #64748b;
-      font-weight: 700;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-    .receipt-badge-status {
-      font-size: 16px;
-      font-weight: 900;
-      color: #007aff;
-      letter-spacing: 0.5px;
-    }
-
-    .receipt-sum-container {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .error-badge-icon {
-      display: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      border: 1.5px solid #ef4444;
-      color: #ef4444;
-      font-size: 11px;
-      font-weight: 900;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-    }
-    .receipt-sum-container.is-refunded .error-badge-icon {
-      display: inline-flex;
-    }
-
-    .receipt-actions-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-bottom: 24px;
-      margin-top: 10px;
-    }
-    .receipt-action-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-    }
-    .receipt-action-icon {
-      width: 44px;
-      height: 44px;
-      background: #f1f5f9;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #007aff;
-    }
-    .receipt-action-label {
-      font-size: 10px;
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    .status-view {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      flex: 1;
-      justify-content: flex-start;
-      padding-top: 10px;
-    }
-    .status-view.active {
-      display: flex;
-    }
-
-    .status-icon-box {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 14px auto;
-    }
-    .status-icon-box.pending {
-      background: #fff7ed;
-      color: #f97316;
-      border: 2px solid #ffedd5;
-    }
-    .status-icon-box.success {
-      background: #ecfdf5;
-      color: #10b981;
-      border: 2px solid #d1fae5;
-    }
-
-    .status-title-pending {
-      font-size: 20px;
-      font-weight: 800;
-      color: #f97316;
-      margin-bottom: 24px;
-    }
-    .status-title-success {
-      font-size: 20px;
-      font-weight: 800;
-      color: #007aff;
-      margin-bottom: 24px;
-    }
-
-    .keyboard-container {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      width: 100%;
-      background: #d1d5db;
-      padding: 10px 10px calc(28px + env(safe-area-inset-bottom)) 10px;
-      border-top-left-radius: 14px;
-      border-top-right-radius: 14px;
-      box-shadow: 0 -6px 25px rgba(0,0,0,0.18);
-      z-index: 1000;
-      display: none;
-    }
-
-    .keyboard-container.visible {
-      display: block;
-    }
-
-    .keyboard-next-btn {
-      width: 100%;
-      background: #f97316;
-      border: none;
-      border-radius: 14px;
-      padding: 16px;
-      color: white;
-      font-size: 16px;
-      font-weight: 800;
-      cursor: pointer;
-      text-align: center;
-      margin-bottom: 10px;
-      box-shadow: 0 3px 10px rgba(249, 115, 22, 0.35);
-    }
-
-    .ios-keyboard {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .kb-row {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-    }
-
-    .kb-key {
-      flex: 1;
-      height: 52px;
-      background: #ffffff;
-      border-radius: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-      user-select: none;
-      transition: background 0.1s;
-    }
-
-    .kb-key:active {
-      background: #b0bec5;
-    }
-
-    .kb-num {
-      font-size: 24px;
-      font-weight: 400;
-      color: #000000;
-      line-height: 1;
-    }
-
-    .kb-sub {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      color: #000000;
-      margin-top: 3px;
-    }
-
-    .kb-key-action {
-      background: #e2e8f0;
-    }
-
-    .default-next-container {
-      position: fixed;
-      bottom: calc(20px + env(safe-area-inset-bottom));
-      left: 16px;
-      right: 16px;
-      z-index: 50;
-    }
-
-    .default-next-container.hidden {
-      display: none;
-    }
-
-    .next-btn {
-      width: 100%;
-      background: #f97316;
-      border: none;
-      border-radius: 16px;
-      padding: 16px;
-      color: white;
-      font-size: 16px;
-      font-weight: 800;
-      cursor: pointer;
-      text-align: center;
-      box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f4f6fa">
+<title>DC Wallet - Transfer & History</title>
+<style>
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+}
+/* ЭКРАН БЛОКИРОВКИ (PIN-код) */
+#lock-screen {
+position: fixed;
+top: 0; left: 0; right: 0; bottom: 0;
+background: #f4f6fa;
+z-index: 9999;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+padding: 24px;
+transition: opacity 0.3s ease;
+}
+#lock-screen.hidden {
+opacity: 0;
+pointer-events: none;
+}
+.lock-logo {
+width: 64px;
+height: 64px;
+background: #007aff;
+border-radius: 20px;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-weight: 900;
+font-size: 24px;
+margin-bottom: 20px;
+box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+}
+.lock-title {
+font-size: 18px;
+font-weight: 800;
+color: #0f172a;
+margin-bottom: 6px;
+}
+.lock-subtitle {
+font-size: 13px;
+color: #64748b;
+font-weight: 600;
+margin-bottom: 30px;
+text-align: center;
+}
+.pin-dots {
+display: flex;
+gap: 16px;
+margin-bottom: 40px;
+}
+.pin-dot {
+width: 16px;
+height: 16px;
+border-radius: 50%;
+background: #cbd5e1;
+transition: background 0.2s, transform 0.2s;
+}
+.pin-dot.filled {
+background: #007aff;
+transform: scale(1.1);
+}
+.pin-keyboard {
+display: grid;
+grid-template-columns: repeat(3, 76px);
+gap: 16px;
+}
+.pin-key {
+height: 76px;
+background: #ffffff;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 26px;
+font-weight: 700;
+color: #0f172a;
+cursor: pointer;
+box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+user-select: none;
+transition: background 0.1s, transform 0.1s;
+}
+.pin-key:active {
+background: #e2e8f0;
+transform: scale(0.95);
+}
+.pin-key.action-key {
+background: transparent;
+box-shadow: none;
+font-size: 16px;
+color: #64748b;
+}
+body {
+background-color: #f4f6fa;
+margin: 0;
+padding: 0;
+display: flex;
+justify-content: center;
+}
+.app-container {
+width: 100%;
+max-width: 100%;
+background: #f4f6fa;
+position: relative;
+min-height: 100vh;
+overflow-x: hidden;
+}
+.screen {
+display: none;
+}
+.screen.active {
+display: block;
+}
+#main-screen {
+padding: calc(12px + env(safe-area-inset-top)) 16px calc(80px + env(safe-area-inset-bottom)) 16px;
+}
+.top-nav {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 14px;
+padding: 2px 0;
+}
+.top-nav-left, .top-nav-right {
+cursor: pointer;
+}
+.top-nav-left svg, .top-nav-right svg {
+width: 24px;
+height: 24px;
+fill: #2563eb;
+}
+.top-nav-right {
+display: flex;
+gap: 16px;
+align-items: center;
+}
+.top-nav-right svg {
+width: 22px;
+height: 22px;
+}
+/* БОКОВОЕ МЕНЮ (САЙДБАР) */
+.sidebar-overlay {
+position: fixed;
+top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0, 0, 0, 0.4);
+z-index: 2000;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.3s ease;
+}
+.sidebar-overlay.active {
+opacity: 1;
+pointer-events: auto;
+}
+.sidebar {
+position: fixed;
+top: 0; left: 0; bottom: 0;
+width: 300px;
+background: #ffffff;
+z-index: 2001;
+transform: translateX(-100%);
+transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+display: flex;
+flex-direction: column;
+padding-top: env(safe-area-inset-top);
+padding-bottom: env(safe-area-inset-bottom);
+box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+overflow-y: auto;
+}
+.sidebar.active {
+transform: translateX(0);
+}
+.sidebar-header {
+padding: 20px 16px 16px 16px;
+border-bottom: 1px solid #f1f5f9;
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+.sidebar-user-row {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+.sidebar-avatar {
+width: 48px;
+height: 48px;
+background: #007aff;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+color: white;
+font-weight: 800;
+font-size: 18px;
+flex-shrink: 0;
+}
+.sidebar-user-info {
+display: flex;
+flex-direction: column;
+gap: 2px;
+overflow: hidden;
+}
+.sidebar-name {
+font-size: 15px;
+font-weight: 800;
+color: #0f172a;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.sidebar-phone {
+font-size: 12px;
+font-weight: 600;
+color: #64748b;
+}
+.sidebar-menu {
+padding: 12px 0;
+display: flex;
+flex-direction: column;
+}
+.sidebar-item {
+display: flex;
+align-items: center;
+gap: 16px;
+padding: 14px 20px;
+font-size: 14px;
+font-weight: 700;
+color: #0f172a;
+text-decoration: none;
+transition: background 0.1s;
+cursor: pointer;
+}
+.sidebar-item:active {
+background: #f1f5f9;
+}
+.sidebar-item svg {
+width: 20px;
+height: 20px;
+fill: #007aff;
+}
+.sidebar-divider {
+height: 1px;
+background: #f1f5f9;
+margin: 8px 0;
+}
+.balance-container {
+display: flex;
+gap: 10px;
+align-items: stretch;
+width: 100%;
+margin-bottom: 16px;
+}
+.balance-blue-card {
+flex: 1;
+background-color: #007aff;
+border-radius: 22px;
+padding: 24px 20px 22px 20px;
+color: #ffffff;
+display: flex;
+justify-content: space-between;
+align-items: flex-start;
+box-shadow: 0 4px 14px rgba(0, 122, 255, 0.2);
+}
+.balance-left {
+display: flex;
+flex-direction: column;
+justify-content: center;
+position: relative;
+}
+.balance-amount-row {
+display: flex;
+align-items: baseline;
+gap: 8px;
+position: relative;
+}
+.amount-wrapper {
+position: relative;
+display: inline-flex;
+align-items: center;
+}
+.balance-amount {
+font-size: 34px;
+font-weight: 700;
+line-height: 1;
+letter-spacing: -0.5px;
+transition: opacity 0.2s ease;
+}
+.balance-amount.hidden-mode {
+opacity: 0.8;
+letter-spacing: 2px;
+}
+.balance-currency {
+font-size: 15px;
+font-weight: 700;
+transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.is-loading .balance-currency {
+transform: translateX(18px);
+}
+.timestamp-wrapper {
+position: relative;
+margin-top: 10px;
+display: inline-flex;
+align-items: center;
+}
+.balance-timestamp {
+font-size: 11px;
+font-weight: 600;
+color: rgba(255, 255, 255, 0.85);
+letter-spacing: 0.2px;
+transition: opacity 0.2s ease;
+}
+.skeleton {
+position: absolute;
+top: 50%;
+left: 0;
+transform: translateY(-50%);
+background: rgba(255, 255, 255, 0.25);
+border-radius: 20px;
+overflow: hidden;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.2s ease;
+}
+.skeleton-amount {
+width: 100px;
+height: 32px;
+border-radius: 12px;
+}
+.skeleton-date {
+width: 140px;
+height: 14px;
+border-radius: 7px;
+}
+.skeleton::after {
+content: "";
+position: absolute;
+top: 0; right: 0; bottom: 0; left: 0;
+transform: translateX(-100%);
+background-image: linear-gradient(
+90deg,
+rgba(255, 255, 255, 0) 0,
+rgba(255, 255, 255, 0.4) 50%,
+rgba(255, 255, 255, 0) 100%
+);
+animation: shimmer 1.2s infinite ease-in-out;
+}
+@keyframes shimmer {
+100% { transform: translateX(100%); }
+}
+.is-loading .balance-amount,
+.is-loading .balance-timestamp {
+opacity: 0 !important;
+}
+.is-loading .skeleton {
+opacity: 1 !important;
+}
+.balance-right-actions {
+display: flex;
+align-items: center;
+gap: 14px;
+margin-top: 4px;
+}
+.action-svg-btn {
+background: none;
+border: none;
+padding: 0;
+cursor: pointer;
+width: 22px;
+height: 22px;
+display: flex;
+align-items: center;
+justify-content: center;
+position: relative;
+}
+.action-svg-btn svg {
+width: 100%;
+height: 100%;
+fill: #ffffff;
+position: absolute;
+transition: transform 0.4s ease, opacity 0.2s ease;
+}
+.icon-spinner {
+opacity: 0;
+transform: rotate(0deg);
+}
+.action-svg-btn.is-refreshing .icon-refresh {
+opacity: 0;
+transform: rotate(180deg);
+}
+.action-svg-btn.is-refreshing .icon-spinner {
+opacity: 1;
+animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+100% { transform: rotate(360deg); }
+}
+.balance-qr-card { width: 62px; background-color: #ffffff; border-radius: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); }
+.balance-qr-card svg { width: 26px; height: 26px; fill: #007aff; }
+.phone-card { width: 106px; height: 90px; background: #ffffff; border-radius: 20px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 18px; cursor: pointer; }
+.phone-icon { width: 34px; height: 34px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #007aff; margin-bottom: 6px; }
+.phone-text { font-size: 10px; font-weight: 700; color: #0f172a; line-height: 1.2; }
+.chart-card {
+background: #ffffff;
+border-radius: 20px;
+padding: 14px 16px;
+margin-bottom: 18px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}
+.chart-header {
+font-size: 13px;
+font-weight: 800;
+color: #0f172a;
+margin-bottom: 12px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+.chart-bars {
+display: flex;
+justify-content: space-between;
+align-items: flex-end;
+height: 90px;
+padding-top: 10px;
+}
+.bar-item {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 6px;
+cursor: pointer;
+flex: 1;
+}
+.bar-column {
+width: 22px;
+background: #e2e8f0;
+border-radius: 6px;
+}
+.bar-item.active .bar-column {
+background: #007aff;
+}
+.bar-label {
+font-size: 10px;
+color: #94a3b8;
+font-weight: 700;
+}
+.bar-item.active .bar-label {
+color: #007aff;
+}
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.section-title { font-size: 14px; font-weight: 800; color: #0f172a; }
+.see-all { font-size: 13px; color: #007aff; font-weight: 700; text-decoration: none; }
+.pills-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 2px; }
+.pills-container::-webkit-scrollbar { display: none; }
+.pill-item { background: #ffffff; border-radius: 22px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 13px; font-weight: 700; color: #0f172a; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+.pill-badge { width: 26px; height: 26px; border-radius: 8px; background: #007aff; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
+.services-row { background: #ffffff; border-radius: 20px; padding: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 14px; }
+.service-item { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
+.service-item:not(:last-child) { border-right: 1px solid #f1f5f9; }
+.service-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
+.service-name { font-size: 12px; font-weight: 800; color: #0f172a; }
+.grid-2 { display: grid; grid-template-columns: 1.8fr 1fr; gap: 10px; margin-bottom: 10px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
+.card { background: #ffffff; padding: 12px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; min-height: 85px; }
+.card-title { font-size: 12px; font-weight: 800; color: #0f172a; }
+.card-sub { font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+.card-img-placeholder {
+width: 28px;
+height: 28px;
+border-radius: 8px;
+align-self: flex-end;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+.bottom-nav {
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+height: calc(68px + env(safe-area-inset-bottom));
+background: #ffffff;
+display: flex;
+justify-content: space-around;
+align-items: center;
+border-top: 1px solid #e2e8f0;
+z-index: 100;
+width: 100%;
+padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav.hidden {
+display: none !important;
+}
+.nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #94a3b8; font-weight: 700; flex: 1; background: none; border: none; cursor: pointer; }
+.nav-btn.active { color: #007aff; }
+
+/* Размер и стили SVG-иконок нижнего меню */
+.nav-btn svg {
+width: 22px;
+height: 22px;
+fill: none;
+stroke: currentColor;
+stroke-width: 2;
+stroke-linecap: round;
+stroke-linejoin: round;
+}
+
+.scanner-center { position: relative; top: -14px; flex: 1; display: flex; justify-content: center; }
+.scanner-circle { width: 52px; height: 52px; background: #007aff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35); }
+.scanner-circle svg { width: 26px; height: 26px; fill: none; stroke: #ffffff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+#transfer-screen {
+background: #f4f6fa;
+min-height: 100vh;
+padding: 0 16px calc(100px + env(safe-area-inset-bottom)) 16px;
+}
+.transfer-header-bg {
+background: #007aff;
+margin: 0 -16px 14px -16px;
+padding: calc(14px + env(safe-area-inset-top)) 16px 12px 16px;
+border-radius: 0 0 20px 20px;
+}
+.transfer-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+}
+.transfer-back {
+background: none;
+border: none;
+cursor: pointer;
+font-size: 20px;
+color: #ffffff;
+font-weight: bold;
+display: flex;
+align-items: center;
+}
+.transfer-title {
+font-size: 16px;
+font-weight: 800;
+color: #ffffff;
+}
+.transfer-star {
+background: none;
+border: none;
+cursor: pointer;
+font-size: 22px;
+color: #ffffff;
+}
+.transfer-input-box {
+background: #ffffff;
+border-radius: 14px;
+padding: 14px 16px;
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 10px;
+box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+font-size: 14px;
+color: #94a3b8;
+font-weight: 600;
+cursor: pointer;
+position: relative;
+border: 2px solid transparent;
+transition: border-color 0.2s;
+}
+.input-wrapper-inner {
+display: flex;
+align-items: center;
+width: 100%;
+position: relative;
+overflow: hidden;
+}
+.transfer-input-box input {
+border: none;
+outline: none;
+font-size: 14px;
+width: 100%;
+background: transparent;
+color: #0f172a;
+font-weight: 600;
+pointer-events: none;
+text-align: left;
+}
+.transfer-input-box input::placeholder {
+color: #94a3b8;
+}
+.custom-caret {
+display: none;
+position: absolute;
+left: 16px;
+width: 2px;
+height: 18px;
+background-color: #007aff;
+animation: blink 1s infinite;
+pointer-events: none;
+}
+@keyframes blink {
+0%, 50% { opacity: 1; }
+51%, 100% { opacity: 0; }
+}
+.transfer-input-box.focused .custom-caret {
+display: block;
+}
+.transfer-input-icons {
+display: flex;
+gap: 12px;
+align-items: center;
+flex-shrink: 0;
+margin-left: 10px;
+}
+.transfer-input-icons svg {
+width: 20px;
+height: 20px;
+fill: #007aff;
+cursor: pointer;
+}
+.check-btn {
+width: 100%;
+background: #eef2ff;
+border: 1.5px solid rgba(0, 122, 255, 0.35);
+border-radius: 14px;
+padding: 15px;
+color: #007aff;
+font-size: 14px;
+font-weight: 800;
+cursor: pointer;
+margin-bottom: 10px;
+box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+.min-sum {
+font-size: 12px;
+color: #94a3b8;
+font-weight: 700;
+text-align: right;
+margin-bottom: 12px;
+margin-right: 4px;
+}
+.single-card-wrapper {
+display: flex;
+justify-content: center;
+margin-bottom: 14px;
+}
+.single-account-card {
+background: #007aff;
+border-radius: 20px;
+padding: 14px 16px;
+color: white;
+width: 120px;
+height: 86px;
+box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+}
+.single-account-card .card-top {
+font-size: 10px;
+font-weight: 700;
+letter-spacing: 0.3px;
+color: rgba(255, 255, 255, 0.9);
+}
+.single-account-card .card-sum {
+font-size: 13px;
+font-weight: 800;
+}
+.transfer-notice {
+font-size: 12px;
+color: #64748b;
+line-height: 1.45;
+font-weight: 600;
+margin-bottom: 20px;
+width: 100%;
+}
+#history-screen {
+background: #f4f6fa;
+min-height: 100vh;
+padding: 0 0 calc(80px + env(safe-area-inset-bottom)) 0;
+}
+.history-tabs-header {
+display: flex;
+background: #ffffff;
+position: relative;
+border-bottom: 1px solid #e2e8f0;
+padding-top: env(safe-area-inset-top);
+}
+.history-tab {
+flex: 1;
+text-align: center;
+padding: 14px 0;
+font-size: 15px;
+font-weight: 700;
+color: #94a3b8;
+background: none;
+border: none;
+cursor: pointer;
+position: relative;
+}
+.history-tab.active {
+color: #0f172a;
+font-weight: 800;
+}
+.history-tab-indicator {
+position: absolute;
+bottom: 0;
+left: 0;
+width: 50%;
+height: 3px;
+background: #007aff;
+border-radius: 3px 3px 0 0;
+transition: transform 0.3s ease;
+}
+.history-screen-body {
+padding: 12px 16px;
+}
+.history-update-row {
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 12px;
+color: #64748b;
+font-weight: 600;
+margin-bottom: 12px;
+}
+.history-update-row-left {
+display: flex;
+align-items: center;
+gap: 6px;
+}
+.history-update-row svg {
+width: 14px;
+height: 14px;
+fill: #007aff;
+cursor: pointer;
+}
+.history-date-badge {
+display: inline-block;
+background: #e2e8f0;
+color: #475569;
+font-size: 12px;
+font-weight: 700;
+padding: 6px 14px;
+border-radius: 16px;
+margin-bottom: 12px;
+}
+.history-list {
+display: flex;
+flex-direction: column;
+gap: 10px;
+}
+.history-item {
+background: #ffffff;
+border-radius: 16px;
+padding: 14px 16px;
+display: flex;
+justify-content: space-between;
+align-items: center;
+box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+cursor: pointer;
+transition: transform 0.1s;
+}
+.history-item:active {
+transform: scale(0.98);
+}
+.history-left {
+display: flex;
+flex-direction: column;
+gap: 2px;
+}
+.history-card-num {
+font-size: 11px;
+color: #94a3b8;
+font-weight: 600;
+}
+.history-title {
+font-size: 14px;
+font-weight: 800;
+color: #0f172a;
+}
+.history-subtitle {
+font-size: 11px;
+color: #94a3b8;
+font-weight: 600;
+}
+.history-right {
+display: flex;
+flex-direction: column;
+align-items: flex-end;
+gap: 2px;
+}
+.history-sum-row {
+display: flex;
+align-items: center;
+gap: 4px;
+}
+.history-sum {
+font-size: 14px;
+font-weight: 800;
+color: #0f172a;
+}
+.history-check-icon {
+font-size: 12px;
+color: #10b981;
+}
+.history-check-icon.error-icon {
+color: #ef4444;
+font-weight: 900;
+}
+.history-time {
+font-size: 11px;
+font-weight: 600;
+color: #94a3b8;
+}
+.load-more-btn {
+width: 100%;
+background: #ff8c42;
+border: none;
+border-radius: 16px;
+padding: 15px;
+color: white;
+font-size: 15px;
+font-weight: 800;
+cursor: pointer;
+text-align: center;
+margin-top: 16px;
+box-shadow: 0 4px 14px rgba(255, 140, 66, 0.3);
+}
+.history-empty {
+text-align: center;
+color: #94a3b8;
+font-size: 14px;
+margin-top: 30px;
+font-weight: 600;
+}
+.history-tab-pane {
+display: none;
+}
+.history-tab-pane.active {
+display: block;
+}
+.confirmation-modal {
+position: fixed;
+top: 0; left: 0; right: 0; bottom: 0;
+background: rgba(0, 0, 0, 0.5);
+z-index: 2000;
+display: flex;
+align-items: flex-end;
+justify-content: center;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.3s ease;
+}
+.confirmation-modal.visible {
+opacity: 1;
+pointer-events: auto;
+}
+.modal-content {
+width: 100%;
+max-width: 100%;
+background: #ffffff;
+border-top-left-radius: 24px;
+border-top-right-radius: 24px;
+padding: 18px 20px calc(36px + env(safe-area-inset-bottom)) 20px;
+box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+transform: translateY(100%);
+transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
+max-height: 90vh;
+overflow-y: auto;
+display: flex;
+flex-direction: column;
+justify-content: space-between;
+}
+.confirmation-modal.visible .modal-content {
+transform: translateY(0);
+}
+.modal-handle {
+width: 36px;
+height: 4px;
+background: #cbd5e1;
+border-radius: 2px;
+margin: 0 auto 16px auto;
+}
+.modal-subtitle {
+font-size: 13px;
+color: #94a3b8;
+font-weight: 700;
+margin-bottom: 4px;
+}
+.modal-sum-title {
+font-size: 26px;
+font-weight: 800;
+color: #007aff;
+margin-bottom: 24px;
+}
+.modal-details {
+display: flex;
+flex-direction: column;
+gap: 16px;
+margin-bottom: 24px;
+}
+.modal-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+font-size: 14px;
+}
+.modal-label {
+color: #64748b;
+font-weight: 600;
+}
+.modal-value {
+color: #0f172a;
+font-weight: 800;
+}
+.modal-confirm-btn {
+width: 100%;
+background: #007aff;
+border: none;
+border-radius: 16px;
+padding: 16px;
+color: white;
+font-size: 16px;
+font-weight: 800;
+cursor: pointer;
+text-align: center;
+box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
+}
+
+/* ДИЗАЙН ЧЕКА */
+.receipt-view {
+display: none;
+flex-direction: column;
+width: 100%;
+}
+.receipt-view.active {
+display: flex;
+}
+.bank-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding-bottom: 16px;
+}
+.bank-logo {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+.logo-icon {
+width: 36px;
+height: 36px;
+background-color: #007aff;
+border-radius: 8px;
+display: flex;
+justify-content: center;
+align-items: center;
+color: white;
+font-weight: bold;
+font-size: 14px;
+}
+.logo-text {
+line-height: 1.05;
+}
+.logo-text .dushanbe {
+font-size: 14px;
+font-weight: 500;
+color: #165296;
+letter-spacing: 0.8px;
+}
+.logo-text .city-sub {
+font-size: 14px;
+font-weight: 500;
+color: #165296;
+letter-spacing: 0.8px;
+}
+.bank-info {
+text-align: right;
+}
+.bank-name {
+font-size: 13px;
+font-weight: 700;
+color: #7b7b80;
+}
+.bank-details {
+font-size: 11px;
+color: #7b7b80;
+font-weight: 700;
+margin-top: 2px;
+line-height: 1.3;
+}
+.divider {
+height: 1px;
+background-color: #e5e5ea;
+width: 100%;
+margin: 0 0 16px 0;
+}
+.receipt-details {
+display: flex;
+flex-direction: column;
+gap: 12px;
+margin-bottom: 20px;
+}
+.detail-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+.detail-label {
+font-size: 14px;
+color: #7b7b80;
+font-weight: 700;
+}
+.detail-value {
+font-size: 14px;
+color: #1c1c1e;
+font-weight: 600;
+text-align: right;
+}
+.detail-value.success {
+color: #34c759;
+font-weight: 700;
+}
+.status-stamp-container {
+display: flex;
+justify-content: center;
+margin-bottom: 24px;
+}
+.status-badge-box {
+border: 1px solid #2da1ff;
+border-radius: 4px;
+padding: 6px 16px;
+text-align: center;
+background-color: #ffffff;
+display: inline-block;
+transition: all 0.2s ease;
+}
+.status-subtitle {
+font-size: 8px;
+color: #2da1ff;
+font-weight: 500;
+letter-spacing: 0.1px;
+margin-bottom: 2px;
+}
+.status-title {
+font-size: 13px;
+color: #2da1ff;
+font-weight: 700;
+letter-spacing: 0.3px;
+line-height: 1.1;
+text-transform: uppercase;
+}
+.error-badge-icon {
+display: none;
+width: 18px;
+height: 18px;
+border-radius: 50%;
+border: 1.5px solid #ef4444;
+color: #ef4444;
+font-size: 11px;
+font-weight: 900;
+align-items: center;
+justify-content: center;
+line-height: 1;
+margin-left: 6px;
+}
+.receipt-sum-container {
+display: inline-flex;
+align-items: center;
+justify-content: flex-end;
+}
+.receipt-sum-container.is-refunded .error-badge-icon {
+display: inline-flex;
+}
+.receipt-actions-row {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 8px;
+margin-bottom: 24px;
+}
+.receipt-action-item {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 6px;
+background: none;
+border: none;
+cursor: pointer;
+}
+.receipt-action-icon {
+width: 50px;
+height: 50px;
+background-color: #f2f2f7;
+border-radius: 50%;
+display: flex;
+justify-content: center;
+align-items: center;
+color: #1c1c1e;
+font-size: 20px;
+}
+.receipt-action-label {
+font-size: 11px;
+color: #3a3a3c;
+font-weight: 500;
+}
+
+.status-view {
+display: none;
+flex-direction: column;
+align-items: center;
+text-align: center;
+flex: 1;
+justify-content: flex-start;
+padding-top: 10px;
+}
+.status-view.active {
+display: flex;
+}
+.status-icon-box {
+width: 64px;
+height: 64px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+margin: 0 auto 14px auto;
+}
+.status-icon-box.pending {
+background: #fff7ed;
+color: #f97316;
+border: 2px solid #ffedd5;
+}
+.status-icon-box.success {
+background: #ecfdf5;
+color: #10b981;
+border: 2px solid #d1fae5;
+}
+.status-title-pending {
+font-size: 20px;
+font-weight: 800;
+color: #f97316;
+margin-bottom: 24px;
+}
+.status-title-success {
+font-size: 20px;
+font-weight: 800;
+color: #007aff;
+margin-bottom: 24px;
+}
+.keyboard-container {
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+width: 100%;
+background: #d1d5db;
+padding: 10px 10px calc(28px + env(safe-area-inset-bottom)) 10px;
+border-top-left-radius: 14px;
+border-top-right-radius: 14px;
+box-shadow: 0 -6px 25px rgba(0,0,0,0.18);
+z-index: 1000;
+display: none;
+}
+.keyboard-container.visible {
+display: block;
+}
+.keyboard-next-btn {
+width: 100%;
+background: #f97316;
+border: none;
+border-radius: 14px;
+padding: 16px;
+color: white;
+font-size: 16px;
+font-weight: 800;
+cursor: pointer;
+text-align: center;
+margin-bottom: 10px;
+box-shadow: 0 3px 10px rgba(249, 115, 22, 0.35);
+}
+.ios-keyboard {
+display: flex;
+flex-direction: column;
+gap: 8px;
+}
+.kb-row {
+display: flex;
+gap: 8px;
+justify-content: center;
+}
+.kb-key {
+flex: 1;
+height: 52px;
+background: #ffffff;
+border-radius: 10px;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+user-select: none;
+transition: background 0.1s;
+}
+.kb-key:active {
+background: #b0bec5;
+}
+.kb-num {
+font-size: 24px;
+font-weight: 400;
+color: #000000;
+line-height: 1;
+}
+.kb-sub {
+font-size: 10px;
+font-weight: 700;
+letter-spacing: 1.5px;
+color: #000000;
+margin-top: 3px;
+}
+.kb-key-action {
+background: #e2e8f0;
+}
+.default-next-container {
+position: fixed;
+bottom: calc(20px + env(safe-area-inset-bottom));
+left: 16px;
+right: 16px;
+z-index: 50;
+}
+.default-next-container.hidden {
+display: none;
+}
+.next-btn {
+width: 100%;
+background: #f97316;
+border: none;
+border-radius: 16px;
+padding: 16px;
+color: white;
+font-size: 16px;
+font-weight: 800;
+cursor: pointer;
+text-align: center;
+box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+}
+</style>
 </head>
 <body>
-
 <div id="lock-screen">
-  <div class="lock-logo">DC</div>
-  <div class="lock-title">Введите код доступа</div>
-  <div class="lock-subtitle">Введите 4-значный код для входа</div>
-  
-  <div class="pin-dots" id="pin-dots">
-    <div class="pin-dot"></div>
-    <div class="pin-dot"></div>
-    <div class="pin-dot"></div>
-    <div class="pin-dot"></div>
-  </div>
+<div class="lock-logo">DC</div>
+<div class="lock-title">Введите код доступа</div>
+<div class="lock-subtitle">Введите 4-значный код для входа</div>
+<div class="pin-dots" id="pin-dots">
+<div class="pin-dot"></div>
+<div class="pin-dot"></div>
+<div class="pin-dot"></div>
+<div class="pin-dot"></div>
+</div>
+<div class="pin-keyboard">
+<div class="pin-key" data-val="1">1</div>
+<div class="pin-key" data-val="2">2</div>
+<div class="pin-key" data-val="3">3</div>
+<div class="pin-key" data-val="4">4</div>
+<div class="pin-key" data-val="5">5</div>
+<div class="pin-key" data-val="6">6</div>
+<div class="pin-key" data-val="7">7</div>
+<div class="pin-key" data-val="8">8</div>
+<div class="pin-key" data-val="9">9</div>
+<div class="pin-key action-key"></div>
+<div class="pin-key" data-val="0">0</div>
+<div class="pin-key action-key" id="pin-delete">⌫</div>
+</div>
+</div>
 
-  <div class="pin-keyboard">
-    <div class="pin-key" data-val="1">1</div>
-    <div class="pin-key" data-val="2">2</div>
-    <div class="pin-key" data-val="3">3</div>
-    <div class="pin-key" data-val="4">4</div>
-    <div class="pin-key" data-val="5">5</div>
-    <div class="pin-key" data-val="6">6</div>
-    <div class="pin-key" data-val="7">7</div>
-    <div class="pin-key" data-val="8">8</div>
-    <div class="pin-key" data-val="9">9</div>
-    <div class="pin-key action-key"></div>
-    <div class="pin-key" data-val="0">0</div>
-    <div class="pin-key action-key" id="pin-delete">⌫</div>
-  </div>
+<!-- БОКОВОЕ МЕНЮ (САЙДБАР) -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+<div class="sidebar" id="sidebar">
+<div class="sidebar-header">
+<div class="sidebar-user-row">
+<div class="sidebar-avatar">СМ</div>
+<div class="sidebar-user-info">
+<div class="sidebar-name">Саидов Мухамад</div>
+<div class="sidebar-phone">+992 (77) 077-0180</div>
+</div>
+</div>
+</div>
+<div class="sidebar-menu">
+<div class="sidebar-item">
+<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+<span>Профиль</span>
+</div>
+<div class="sidebar-item">
+<svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+<span>Мои карты</span>
+</div>
+<div class="sidebar-item">
+<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+<span>Безопасность</span>
+</div>
+<div class="sidebar-divider"></div>
+<div class="sidebar-item">
+<svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+<span>Помощь и поддержка</span>
+</div>
+<div class="sidebar-item">
+<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+<span>О приложении</span>
+</div>
+</div>
 </div>
 
 <div class="app-container" id="app-container">
-
-  <div id="main-screen" class="screen active">
-    <div class="top-nav">
-      <div class="top-nav-left"><svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg></div>
-      <div class="top-nav-right">
-        <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-        <svg viewBox="0 0 24 24"><path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z"/></svg>
-        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-      </div>
-    </div>
-
-    <div class="balance-container">
-      <div class="balance-blue-card">
-        <div class="balance-left" id="balance-block">
-          <div class="balance-amount-row">
-            <div class="amount-wrapper">
-              <span class="balance-amount" id="balance-val">152.09</span>
-              <div class="skeleton skeleton-amount"></div>
-            </div>
-            <span class="balance-currency">TJS</span>
-          </div>
-          
-          <div class="timestamp-wrapper">
-            <span class="balance-timestamp" id="current-time-display">27.08.26 - 12:09:00</span>
-            <div class="skeleton skeleton-date"></div>
-          </div>
-        </div>
-
-        <div class="balance-right-actions">
-          <button class="action-svg-btn" id="toggle-visibility">
-            <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-          </button>
-          <button class="action-svg-btn" id="refresh-balance">
-            <svg class="icon-refresh" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-            <svg class="icon-spinner" viewBox="0 0 24 24"><path fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" d="M12 4a8 8 0 0 1 8 8"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="balance-qr-card">
-        <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-3 3h2v3h-2v-3zm3 3h3v3h-3v-3zm-3-3h2v-2h-2v2z"/></svg>
-      </div>
-    </div>
-
-    <div class="phone-card" id="go-to-transfer">
-      <div class="phone-icon">DC</div>
-      <div class="phone-text">DC по номеру телефона</div>
-    </div>
-
-    <div class="chart-card">
-      <div class="chart-header">
-        <span>Статистика расходов</span>
-        <span style="font-size: 11px; color: #94a3b8;">Нажмите на столбик</span>
-      </div>
-      <div class="chart-bars" id="interactive-bars">
-        <div class="bar-item" data-index="0"><div class="bar-column" style="height: 40px;"></div><span class="bar-label">Пн</span></div>
-        <div class="bar-item" data-index="1"><div class="bar-column" style="height: 65px;"></div><span class="bar-label">Вт</span></div>
-        <div class="bar-item" data-index="2"><div class="bar-column" style="height: 50px;"></div><span class="bar-label">Ср</span></div>
-        <div class="bar-item" data-index="3"><div class="bar-column" style="height: 80px;"></div><span class="bar-label">Чт</span></div>
-        <div class="bar-item" data-index="4"><div class="bar-column" style="height: 55px;"></div><span class="bar-label">Пт</span></div>
-        <div class="bar-item" data-index="5"><div class="bar-column" style="height: 30px;"></div><span class="bar-label">Сб</span></div>
-        <div class="bar-item" data-index="6"><div class="bar-column" style="height: 45px;"></div><span class="bar-label">Вс</span></div>
-      </div>
-    </div>
-
-    <div class="section-header">
-      <span class="section-title">Мини приложения</span>
-      <a href="#" class="see-all">Все &gt;</a>
-    </div>
-    <div class="pills-container">
-      <div class="pill-item"><div class="pill-badge">DC</div><span>DC business</span></div>
-      <div class="pill-item"><div class="pill-badge" style="background:#10b981;">СБП</div><span>Перевод из РФ</span></div>
-      <div class="pill-item"><div class="pill-badge" style="background:#6366f1;">VISA</div><span>Visa card</span></div>
-    </div>
-
-    <div class="services-row">
-      <div class="service-item"><div class="service-icon" style="background: #10b981;">⚡</div><span class="service-name">Neru</span></div>
-      <div class="service-item"><div class="service-icon" style="background: #007aff;">🅿️</div><span class="service-name">Parking</span></div>
-      <div class="service-item"><div class="service-icon" style="background: #f97316;">🦅</div><span class="service-name">Шохин</span></div>
-    </div>
-
-    <div class="grid-2">
-      <div class="card">
-        <div><div class="card-title">Оплата услуг</div><div class="card-sub">Мобильная связь</div></div>
-        <div class="card-img-placeholder" style="background:#eff6ff;">
-          <svg viewBox="0 0 24 24" fill="#007aff" width="16" height="16"><path d="M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14z"/></svg>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Карты</div>
-        <div class="card-img-placeholder" style="background:#ecfdf5;">
-          <svg viewBox="0 0 24 24" fill="#10b981" width="16" height="16"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-        </div>
-      </div>
-    </div>
-    
-    <div class="grid-3">
-      <div class="card">
-        <div class="card-title">Кредиты</div>
-        <div class="card-img-placeholder" style="background:#fef2f2;">
-          <svg viewBox="0 0 24 24" fill="#e11d48" width="16" height="16"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Депозиты</div>
-        <div class="card-img-placeholder" style="background:#fff7ed;">
-          <svg viewBox="0 0 24 24" fill="#ea580c" width="16" height="16"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Мои дома</div>
-        <div class="card-img-placeholder" style="background:#f5f3ff;">
-          <svg viewBox="0 0 24 24" fill="#8b5cf6" width="16" height="16"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-        </div>
-      </div>
-    </div>
-    
-    <div class="grid-3">
-      <div class="card">
-        <div class="card-title">Документы</div>
-        <div class="card-img-placeholder" style="background:#f0fdfa;">
-          <svg viewBox="0 0 24 24" fill="#0d9488" width="16" height="16"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">CityCard</div>
-        <div class="card-img-placeholder" style="background:#eff6ff;">
-          <svg viewBox="0 0 24 24" fill="#2563eb" width="16" height="16"><path d="M12 2c-4.42 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h2.23l2-2H14l2 2h2.23v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zm0 5.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM7.5 16c-.83 0-1.5-.67-1.5-1.5S6.67 13 7.5 13s1.5.67 1.5 1.5S8.33 16 7.5 16zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Новости</div>
-        <div class="card-img-placeholder" style="background:#fdf4ff;">
-          <svg viewBox="0 0 24 24" fill="#9333ea" width="16" height="16"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="transfer-screen" class="screen">
-    <div class="transfer-header-bg">
-      <div class="transfer-header">
-        <button class="transfer-back" id="go-back">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <span class="transfer-title">DC (по номеру телефона)</span>
-        <button class="transfer-star">☆</button>
-      </div>
-    </div>
-
-    <div class="transfer-input-box" data-field="phone">
-      <div class="input-wrapper-inner">
-        <input type="text" id="input-phone" placeholder="Номер телефона получателя" readonly>
-        <span class="custom-caret"></span>
-      </div>
-      <div class="transfer-input-icons">
-        <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-      </div>
-    </div>
-
-    <button class="check-btn" id="check-number-btn">Проверить номер/счет</button>
-
-    <div class="transfer-input-box" data-field="sum">
-      <div class="input-wrapper-inner">
-        <input type="text" id="input-sum" placeholder="TJS Сумма" readonly>
-        <span class="custom-caret"></span>
-      </div>
-    </div>
-
-    <div class="transfer-input-box" data-field="comment">
-      <div class="input-wrapper-inner">
-        <input type="text" id="input-comment" placeholder="Комментарий" readonly>
-        <span class="custom-caret"></span>
-      </div>
-    </div>
-
-    <div class="min-sum">Мин. сумма: 1.00 TJS</div>
-
-    <div class="single-card-wrapper">
-      <div class="single-account-card">
-        <div class="card-top">VISA****6631</div>
-        <div class="card-sum" id="transfer-card-sum">152.09 TJS</div>
-      </div>
-    </div>
-
-    <div class="transfer-notice">
-      Для перевода на карту Душанбе Сити укажите номер кошелька и введите сумму перевода. Без комиссии. Если вы отправили деньги не тому человеку, обратитесь к получателю перевода. Деньги может вернуть только получатель.
-    </div>
-
-    <div class="default-next-container" id="default-next-container">
-      <button class="next-btn" id="main-action-btn">Далее</button>
-    </div>
-  </div>
-
-  <div id="history-screen" class="screen">
-    <div class="history-tabs-header">
-      <button class="history-tab active" id="tab-operations">Операции</button>
-      <button class="history-tab" id="tab-statement">Выписка</button>
-      <div class="history-tab-indicator" id="history-tab-indicator"></div>
-    </div>
-
-    <div class="history-tab-pane active" id="pane-operations">
-      <div class="history-screen-body">
-        <div class="history-update-row">
-          <span>Обновлено: <span id="history-update-time">27.08.26 - 12:41</span></span>
-          <svg viewBox="0 0 24 24" id="history-refresh-btn"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-        </div>
-
-        <div style="text-align: center;">
-          <div class="history-date-badge">Сегодня</div>
-        </div>
-
-        <div class="history-list" id="history-list-container">
-          <div class="history-empty">У вас пока нет истории переводов</div>
-        </div>
-
-        <button class="load-more-btn" id="load-more-btn">Загрузить ещё</button>
-      </div>
-    </div>
-
-    <div class="history-tab-pane" id="pane-statement">
-      <div class="history-screen-body">
-        <div class="history-update-row">
-          <span>Обновлено: <span id="statement-update-time">27.08.26 - 12:41</span></span>
-          <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="bottom-nav" id="bottom-nav">
-    <button class="nav-btn active" id="nav-main"><span>🏠</span><span>Главная</span></button>
-    <button class="nav-btn" id="nav-transfers"><span>➡️</span><span>Переводы</span></button>
-    <div class="scanner-center"><div class="scanner-circle">📷</div></div>
-    <button class="nav-btn"><span>⊞</span><span>MiniApps</span></button>
-    <button class="nav-btn" id="nav-history"><span>🕒</span><span>История</span></button>
-  </div>
-
+<div id="main-screen" class="screen active">
+<div class="top-nav">
+<div class="top-nav-left" id="open-sidebar-btn"><svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg></div>
+<div class="top-nav-right">
+<svg id="bell-icon" style="cursor: pointer;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+<svg viewBox="0 0 24 24"><path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z"/></svg>
+<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
 </div>
-
+</div>
+<div class="balance-container">
+<div class="balance-blue-card">
+<div class="balance-left" id="balance-block">
+<div class="balance-amount-row">
+<div class="amount-wrapper">
+<span class="balance-amount" id="balance-val">152.09</span>
+<div class="skeleton skeleton-amount"></div>
+</div>
+<span class="balance-currency">TJS</span>
+</div>
+<div class="timestamp-wrapper">
+<span class="balance-timestamp" id="current-time-display">27.08.26 - 12:09:00</span>
+<div class="skeleton skeleton-date"></div>
+</div>
+</div>
+<div class="balance-right-actions">
+<button class="action-svg-btn" id="toggle-visibility">
+<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+</button>
+<button class="action-svg-btn" id="refresh-balance">
+<svg class="icon-refresh" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+<svg class="icon-spinner" viewBox="0 0 24 24"><path fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" d="M12 4a8 8 0 0 1 8 8"/></svg>
+</button>
+</div>
+</div>
+<div class="balance-qr-card">
+<svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-3 3h2v3h-2v-3zm3 3h3v3h-3v-3zm-3-3h2v-2h-2v2z"/></svg>
+</div>
+</div>
+<div class="phone-card" id="go-to-transfer">
+<div class="phone-icon">DC</div>
+<div class="phone-text">DC по номеру телефона</div>
+</div>
+<div class="chart-card">
+<div class="chart-header">
+<span>Статистика расходов</span>
+<span style="font-size: 11px; color: #94a3b8;">Нажмите на столбик</span>
+</div>
+<div class="chart-bars" id="interactive-bars">
+<div class="bar-item" data-index="0"><div class="bar-column" style="height: 40px;"></div><span class="bar-label">Пн</span></div>
+<div class="bar-item" data-index="1"><div class="bar-column" style="height: 65px;"></div><span class="bar-label">Вт</span></div>
+<div class="bar-item" data-index="2"><div class="bar-column" style="height: 50px;"></div><span class="bar-label">Ср</span></div>
+<div class="bar-item" data-index="3"><div class="bar-column" style="height: 80px;"></div><span class="bar-label">Чт</span></div>
+<div class="bar-item" data-index="4"><div class="bar-column" style="height: 55px;"></div><span class="bar-label">Пт</span></div>
+<div class="bar-item" data-index="5"><div class="bar-column" style="height: 30px;"></div><span class="bar-label">Сб</span></div>
+<div class="bar-item" data-index="6"><div class="bar-column" style="height: 45px;"></div><span class="bar-label">Вс</span></div>
+</div>
+</div>
+<div class="section-header">
+<span class="section-title">Мини приложения</span>
+<a href="#" class="see-all">Все ></a>
+</div>
+<div class="pills-container">
+<div class="pill-item"><div class="pill-badge">DC</div><span>DC business</span></div>
+<div class="pill-item"><div class="pill-badge" style="background:#10b981;">СБП</div><span>Перевод из РФ</span></div>
+<div class="pill-item"><div class="pill-badge" style="background:#6366f1;">VISA</div><span>Visa card</span></div>
+</div>
+<div class="services-row">
+<div class="service-item"><div class="service-icon" style="background: #10b981;">⚡</div><span class="service-name">Neru</span></div>
+<div class="service-item"><div class="service-icon" style="background: #007aff;">🅿️</div><span class="service-name">Parking</span></div>
+<div class="service-item"><div class="service-icon" style="background: #f97316;">🦅</div><span class="service-name">Шохин</span></div>
+</div>
+<div class="grid-2">
+<div class="card">
+<div><div class="card-title">Оплата услуг</div><div class="card-sub">Мобильная связь</div></div>
+<div class="card-img-placeholder" style="background:#eff6ff;">
+<svg viewBox="0 0 24 24" fill="#007aff" width="16" height="16"><path d="M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14z"/></svg>
+</div>
+</div>
+<div class="card">
+<div class="card-title">Карты</div>
+<div class="card-img-placeholder" style="background:#ecfdf5;">
+<svg viewBox="0 0 24 24" fill="#10b981" width="16" height="16"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+</div>
+</div>
+</div>
+<div class="grid-3">
+<div class="card">
+<div class="card-title">Кредиты</div>
+<div class="card-img-placeholder" style="background:#fef2f2;">
+<svg viewBox="0 0 24 24" fill="#e11d48" width="16" height="16"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+</div>
+</div>
+<div class="card">
+<div class="card-title">Депозиты</div>
+<div class="card-img-placeholder" style="background:#fff7ed;">
+<svg viewBox="0 0 24 24" fill="#ea580c" width="16" height="16"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+</div>
+</div>
+<div class="card">
+<div class="card-title">Мои дома</div>
+<div class="card-img-placeholder" style="background:#f5f3ff;">
+<svg viewBox="0 0 24 24" fill="#8b5cf6" width="16" height="16"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+</div>
+</div>
+</div>
+<div class="grid-3">
+<div class="card">
+<div class="card-title">Документы</div>
+<div class="card-img-placeholder" style="background:#f0fdfa;">
+<svg viewBox="0 0 24 24" fill="#0d9488" width="16" height="16"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+</div>
+</div>
+<div class="card">
+<div class="card-title">CityCard</div>
+<div class="card-img-placeholder" style="background:#eff6ff;">
+<svg viewBox="0 0 24 24" fill="#2563eb" width="16" height="16"><path d="M12 2c-4.42 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h2.23l2-2H14l2 2h2.23v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zm0 5.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM7.5 16c-.83 0-1.5-.67-1.5-1.5S6.67 13 7.5 13s1.5.67 1.5 1.5S8.33 16 7.5 16zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+</div>
+</div>
+<div class="card">
+<div class="card-title">Новости</div>
+<div class="card-img-placeholder" style="background:#fdf4ff;">
+<svg viewBox="0 0 24 24" fill="#9333ea" width="16" height="16"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+</div>
+</div>
+</div>
+</div>
+<div id="transfer-screen" class="screen">
+<div class="transfer-header-bg">
+<div class="transfer-header">
+<button class="transfer-back" id="go-back">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+</button>
+<span class="transfer-title">DC (по номеру телефона)</span>
+<button class="transfer-star">☆</button>
+</div>
+</div>
+<div class="transfer-input-box" data-field="phone">
+<div class="input-wrapper-inner">
+<input type="text" id="input-phone" placeholder="Номер телефона получателя" readonly>
+<span class="custom-caret"></span>
+</div>
+<div class="transfer-input-icons">
+<svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+</div>
+</div>
+<button class="check-btn" id="check-number-btn">Проверить номер/счет</button>
+<div class="transfer-input-box" data-field="sum">
+<div class="input-wrapper-inner">
+<input type="text" id="input-sum" placeholder="TJS Сумма" readonly>
+<span class="custom-caret"></span>
+</div>
+</div>
+<div class="transfer-input-box" data-field="comment">
+<div class="input-wrapper-inner">
+<input type="text" id="input-comment" placeholder="Комментарий" readonly>
+<span class="custom-caret"></span>
+</div>
+</div>
+<div class="min-sum">Мин. сумма: 1.00 TJS</div>
+<div class="single-card-wrapper">
+<div class="single-account-card">
+<div class="card-top">VISA****6631</div>
+<div class="card-sum" id="transfer-card-sum">152.09 TJS</div>
+</div>
+</div>
+<div class="transfer-notice">
+Для перевода на карту Душанбе Сити укажите номер кошелька и введите сумму перевода. Без комиссии. Если вы отправили деньги не тому человеку, обратитесь к получателю перевода. Деньги может вернуть только получатель.
+</div>
+<div class="default-next-container" id="default-next-container">
+<button class="next-btn" id="main-action-btn">Далее</button>
+</div>
+</div>
+<div id="history-screen" class="screen">
+<div class="history-tabs-header">
+<button class="history-tab active" id="tab-operations">Операции</button>
+<button class="history-tab" id="tab-statement">Выписка</button>
+<div class="history-tab-indicator" id="history-tab-indicator"></div>
+</div>
+<div class="history-tab-pane active" id="pane-operations">
+<div class="history-screen-body">
+<div class="history-update-row">
+<div class="history-update-row-left">
+<span>Обновлено: <span id="history-update-time">27.08.26 - 12:41</span></span>
+<svg viewBox="0 0 24 24" id="history-refresh-btn"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+</div>
+</div>
+<div style="text-align: center;">
+<div class="history-date-badge">Сегодня</div>
+</div>
+<div class="history-list" id="history-list-container">
+<div class="history-empty">У вас пока нет истории переводов</div>
+</div>
+<button class="load-more-btn" id="load-more-btn">Загрузить ещё</button>
+</div>
+</div>
+<div class="history-tab-pane" id="pane-statement">
+<div class="history-screen-body">
+<div class="history-update-row">
+<div class="history-update-row-left">
+<span>Обновлено: <span id="statement-update-time">27.08.26 - 12:41</span></span>
+<svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bottom-nav" id="bottom-nav">
+<button class="nav-btn active" id="nav-main">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+<span>Главная</span>
+</button>
+<button class="nav-btn" id="nav-transfers">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+<span>Переводы</span>
+</button>
+<div class="scanner-center">
+<div class="scanner-circle">
+<svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><line x1="7" y1="12" x2="17" y2="12"></line></svg>
+</div>
+</div>
+<button class="nav-btn">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+<span>MiniApps</span>
+</button>
+<!-- Внедренная точная иконка Истории -->
+<button class="nav-btn" id="nav-history">
+<svg viewBox="0 0 24 24">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+    <polyline points="14 2 14 8 20 8"></polyline>
+    <line x1="16" y1="13" x2="8" y2="13"></line>
+    <line x1="16" y1="17" x2="8" y2="17"></line>
+    <polyline points="10 9 9 9 8 9"></polyline>
+</svg>
+<span>История</span>
+</button>
+</div>
+</div>
 <div class="confirmation-modal" id="confirmation-modal">
-  <div class="modal-content">
-    
-    <div class="status-view active" id="view-confirm">
-      <div>
-        <div class="modal-handle"></div>
-        <div class="modal-subtitle">Подтверждение платежа</div>
-        <div class="modal-sum-title" id="modal-sum-display">0.00 TJS</div>
-        
-        <div class="modal-details">
-          <div class="modal-row">
-            <span class="modal-label">Поставщик:</span>
-            <span class="modal-value">DC (по номеру телефона)</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Номер/Счет:</span>
-            <span class="modal-value" id="modal-phone-display">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Способ оплаты:</span>
-            <span class="modal-value">4713 **** **** 6631</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Сумма зачисления:</span>
-            <span class="modal-value" id="modal-zaryad-display">0.00 TJS</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Комиссия:</span>
-            <span class="modal-value">0.00 TJS</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Сумма списания:</span>
-            <span class="modal-value" id="modal-spisanie-display">0.00 TJS</span>
-          </div>
-        </div>
-      </div>
-      <button class="modal-confirm-btn" id="modal-final-btn">Подтверждаю</button>
-    </div>
-
-    <div class="status-view" id="view-pending">
-      <div>
-        <div class="modal-handle"></div>
-        <div class="status-icon-box pending">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-        </div>
-        <div class="status-title-pending">Выполняется</div>
-
-        <div class="status-details">
-          <div class="modal-row">
-            <span class="modal-label">Поставщик:</span>
-            <span class="modal-value">DC (по номеру телефона)</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Получатель:</span>
-            <span class="modal-value" id="pending-phone">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">К зачислению:</span>
-            <span class="modal-value" id="pending-sum">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Комиссия:</span>
-            <span class="modal-value">0.00</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Дата:</span>
-            <span class="modal-value" id="pending-date">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Время:</span>
-            <span class="modal-value" id="pending-time">-</span>
-          </div>
-        </div>
-      </div>
-      <div></div>
-    </div>
-
-    <div class="status-view" id="view-success">
-      <div>
-        <div class="modal-handle"></div>
-        <div class="status-icon-box success">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        </div>
-        <div class="status-title-success">Платеж выполнен</div>
-
-        <div class="status-details">
-          <div class="modal-row">
-            <span class="modal-label">Поставщик:</span>
-            <span class="modal-value">DC (по номеру телефона)</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Получатель:</span>
-            <span class="modal-value" id="success-phone">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">К зачислению:</span>
-            <span class="modal-value" id="success-sum">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Комиссия:</span>
-            <span class="modal-value">0.00</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Дата:</span>
-            <span class="modal-value" id="success-date">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Время:</span>
-            <span class="modal-value" id="success-time">-</span>
-          </div>
-        </div>
-      </div>
-      <button class="modal-confirm-btn" id="modal-main-menu-btn">Главное меню</button>
-    </div>
-
-    <div class="receipt-view" id="view-receipt">
-      <div>
-        <div class="modal-handle"></div>
-        
-        <div class="receipt-bank-header">
-          <div class="receipt-bank-name">ЗАО "Душанбе Сити Банк"</div>
-          <div class="receipt-bank-info">ИНН: 510022404<br>Таджикистан, г. Душанбе</div>
-        </div>
-
-        <div class="receipt-logo-block">
-          <div class="receipt-logo-img">DC</div>
-          <div class="receipt-logo-text">CITY<br>DUSHANBE</div>
-        </div>
-
-        <div class="receipt-badge-box" id="receipt-badge-box">
-          <div class="receipt-badge-title">ЗАО «Душанбе Сити Банк»</div>
-          <div class="receipt-badge-status" id="receipt-badge-status">ОПЕРАЦИЯ ВЫПОЛНЕНА</div>
-        </div>
-
-        <div class="status-details" style="margin-top: 14px;">
-          <div class="modal-row">
-            <span class="modal-label">Дата операции:</span>
-            <span class="modal-value" id="receipt-date">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Время операции:</span>
-            <span class="modal-value" id="receipt-time">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Номер операции:</span>
-            <span class="modal-value" id="receipt-op-num">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Поставщик:</span>
-            <span class="modal-value">DC (по номеру телефона)</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Счет отправителя:</span>
-            <span class="modal-value">4713***6631</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Счет получателя:</span>
-            <span class="modal-value" id="receipt-receiver">-</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Сумма операции:</span>
-            <div class="receipt-sum-container" id="receipt-sum-container">
-              <span class="modal-value" id="receipt-sum">-</span>
-              <span class="error-badge-icon">!</span>
-            </div>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Комиссия:</span>
-            <span class="modal-value">0.00</span>
-          </div>
-          <div class="modal-row">
-            <span class="modal-label">Статус:</span>
-            <span class="modal-value" id="receipt-status-text" style="color: #10b981;">Успешный</span>
-          </div>
-        </div>
-
-        <div class="receipt-actions-row">
-          <div class="receipt-action-item" id="btn-share-receipt">
-            <div class="receipt-action-icon">📤</div>
-            <div class="receipt-action-label">Поделиться</div>
-          </div>
-          <div class="receipt-action-item">
-            <div class="receipt-action-icon">📥</div>
-            <div class="receipt-action-label">Сохранить</div>
-          </div>
-          <div class="receipt-action-item">
-            <div class="receipt-action-icon">⭐</div>
-            <div class="receipt-action-label">В избранные</div>
-          </div>
-          <div class="receipt-action-item">
-            <div class="receipt-action-icon">🔄</div>
-            <div class="receipt-action-label">Повторить</div>
-          </div>
-        </div>
-      </div>
-      <button class="modal-confirm-btn" id="receipt-close-btn" style="background: #007aff;">Закрыть</button>
-    </div>
-
-  </div>
+<div class="modal-content">
+<div class="status-view active" id="view-confirm">
+<div>
+<div class="modal-handle"></div>
+<div class="modal-subtitle">Подтверждение платежа</div>
+<div class="modal-sum-title" id="modal-sum-display">0.00 TJS</div>
+<div class="modal-details">
+<div class="modal-row">
+<span class="modal-label">Поставщик:</span>
+<span class="modal-value">DC (по номеру телефона)</span>
 </div>
-
+<div class="modal-row">
+<span class="modal-label">Номер/Счет:</span>
+<span class="modal-value" id="modal-phone-display">-</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Способ оплаты:</span>
+<span class="modal-value">4713 **** **** 6631</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Сумма зачисления:</span>
+<span class="modal-value" id="modal-zaryad-display">0.00 TJS</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Комиссия:</span>
+<span class="modal-value">0.00 TJS</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Сумма списания:</span>
+<span class="modal-value" id="modal-spisanie-display">0.00 TJS</span>
+</div>
+</div>
+</div>
+<button class="modal-confirm-btn" id="modal-final-btn">Подтверждаю</button>
+</div>
+<div class="status-view" id="view-pending">
+<div>
+<div class="modal-handle"></div>
+<div class="status-icon-box pending">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+</div>
+<div class="status-title-pending">Выполняется</div>
+<div class="modal-details" style="text-align: left;">
+<div class="modal-row">
+<span class="modal-label">Поставщик:</span>
+<span class="modal-value">DC (по номеру телефона)</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Получатель:</span>
+<span class="modal-value" id="pending-phone">-</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">К зачислению:</span>
+<span class="modal-value" id="pending-sum">-</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Комиссия:</span>
+<span class="modal-value">0.00</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Дата:</span>
+<span class="modal-value" id="pending-date">-</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Время:</span>
+<span class="modal-value" id="pending-time">-</span>
+</div>
+</div>
+</div>
+<div></div>
+</div>
+<div class="status-view" id="view-success">
+<div>
+<div class="modal-handle"></div>
+<div class="status-icon-box success">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+</div>
+<div class="status-title-success">Платеж выполнен</div>
+<div class="modal-details" style="text-align: left;">
+<div class="modal-row">
+<span class="modal-label">Поставщик:</span>
+<span class="modal-value">DC (по номеру телефона)</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Получатель:</span>
+<span class="modal-value" id="success-phone">-</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">К зачислению:</span>
+<span class="modal-value" id="success-sum">-</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Комиссия:</span>
+<span class="modal-value">0.00</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Дата:</span>
+<span class="modal-value" id="success-date">-</span>
+</div>
+<div class="modal-row">
+<span class="modal-label">Время:</span>
+<span class="modal-value" id="success-time">-</span>
+</div>
+</div>
+</div>
+<button class="modal-confirm-btn" id="modal-main-menu-btn">Главное меню</button>
+</div>
+<div class="receipt-view" id="view-receipt">
+<div>
+<div class="modal-handle"></div>
+<div class="bank-header">
+<div class="bank-logo">
+<div class="logo-icon">DC</div>
+<div class="logo-text">
+<div class="dushanbe">DUSHANBE</div>
+<div class="city-sub">CITY</div>
+</div>
+</div>
+<div class="bank-info">
+<div class="bank-name">ЗАО "Душанбе Сити Банк"</div>
+<div class="bank-details">ИНН: 510022404<br>Таджикистан, г. Душанбе</div>
+</div>
+</div>
+<div class="divider"></div>
+<div class="receipt-details">
+<div class="detail-row">
+<span class="detail-label">Дата операции:</span>
+<span class="detail-value" id="receipt-date">-</span>
+</div>
+<div class="detail-row">
+<span class="detail-label">Время операции:</span>
+<span class="detail-value" id="receipt-time">-</span>
+</div>
+<div class="detail-row">
+<span class="detail-label">Номер операции:</span>
+<span class="detail-value" id="receipt-op-num">-</span>
+</div>
+<div class="detail-row">
+<span class="detail-label">Поставщик:</span>
+<span class="detail-value">DC (по номеру телефона)</span>
+</div>
+<div class="detail-row">
+<span class="detail-label">Счет отправителя:</span>
+<span class="detail-value">4713***6631</span>
+</div>
+<div class="detail-row">
+<span class="detail-label">Счет получателя:</span>
+<span class="detail-value" id="receipt-receiver">-</span>
+</div>
+<div class="detail-row">
+<span class="detail-label">Сумма операции:</span>
+<div class="receipt-sum-container" id="receipt-sum-container">
+<span class="detail-value" id="receipt-sum">-</span>
+<span class="error-badge-icon">!</span>
+</div>
+</div>
+<div class="detail-row">
+<span class="detail-label">Комиссия:</span>
+<span class="detail-value">0.00</span>
+</div>
+<div class="detail-row">
+<span class="detail-label">Статус:</span>
+<span class="detail-value success" id="receipt-status-text">Успешный</span>
+</div>
+</div>
+<div class="divider" style="margin-bottom: 16px;"></div>
+<div class="status-stamp-container">
+<div class="status-badge-box" id="receipt-badge-box">
+<div class="status-subtitle">ЗАО «Душанбе Сити Банк»</div>
+<div class="status-title" id="receipt-badge-status">
+ОПЕРАЦИЯ<br>ВЫПОЛНЕНА
+</div>
+</div>
+</div>
+<div class="receipt-actions-row">
+<button class="receipt-action-item" id="btn-share-receipt">
+<div class="receipt-action-icon">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+</div>
+<span class="receipt-action-label">Поделиться</span>
+</button>
+<button class="receipt-action-item">
+<div class="receipt-action-icon">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+</div>
+<span class="receipt-action-label">Сохранить</span>
+</button>
+<button class="receipt-action-item">
+<div class="receipt-action-icon">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+</div>
+<span class="receipt-action-label">В избранные</span>
+</button>
+<button class="receipt-action-item">
+<div class="receipt-action-icon">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+</div>
+<span class="receipt-action-label">Повторить</span>
+</button>
+</div>
+</div>
+<button class="modal-confirm-btn" id="receipt-close-btn" style="background: #007aff;">Закрыть</button>
+</div>
+</div>
+</div>
 <div class="keyboard-container" id="custom-keyboard">
-  <button class="keyboard-next-btn" id="kb-action-btn">Далее</button>
-  <div class="ios-keyboard">
-    <div class="kb-row">
-      <div class="kb-key" data-val="1"><span class="kb-num">1</span></div>
-      <div class="kb-key" data-val="2"><span class="kb-num">2</span><span class="kb-sub">ABC</span></div>
-      <div class="kb-key" data-val="3"><span class="kb-num">3</span><span class="kb-sub">DEF</span></div>
-    </div>
-    <div class="kb-row">
-      <div class="kb-key" data-val="4"><span class="kb-num">4</span><span class="kb-sub">GHI</span></div>
-      <div class="kb-key" data-val="5"><span class="kb-num">5</span><span class="kb-sub">JKL</span></div>
-      <div class="kb-key" data-val="6"><span class="kb-num">6</span><span class="kb-sub">MNO</span></div>
-    </div>
-    <div class="kb-row">
-      <div class="kb-key" data-val="7"><span class="kb-num">7</span><span class="kb-sub">PQRS</span></div>
-      <div class="kb-key" data-val="8"><span class="kb-num">8</span><span class="kb-sub">TUV</span></div>
-      <div class="kb-key" data-val="9"><span class="kb-num">9</span><span class="kb-sub">WXYZ</span></div>
-    </div>
-    <div class="kb-row">
-      <div class="kb-key kb-key-action" data-val=","><span class="kb-num">,</span></div>
-      <div class="kb-key" data-val="0"><span class="kb-num">0</span></div>
-      <div class="kb-key kb-key-action" id="kb-delete">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
-      </div>
-    </div>
-  </div>
+<button class="keyboard-next-btn" id="kb-action-btn">Далее</button>
+<div class="ios-keyboard">
+<div class="kb-row">
+<div class="kb-key" data-val="1"><span class="kb-num">1</span></div>
+<div class="kb-key" data-val="2"><span class="kb-num">2</span><span class="kb-sub">ABC</span></div>
+<div class="kb-key" data-val="3"><span class="kb-num">3</span><span class="kb-sub">DEF</span></div>
 </div>
-
+<div class="kb-row">
+<div class="kb-key" data-val="4"><span class="kb-num">4</span><span class="kb-sub">GHI</span></div>
+<div class="kb-key" data-val="5"><span class="kb-num">5</span><span class="kb-sub">JKL</span></div>
+<div class="kb-key" data-val="6"><span class="kb-num">6</span><span class="kb-sub">MNO</span></div>
+</div>
+<div class="kb-row">
+<div class="kb-key" data-val="7"><span class="kb-num">7</span><span class="kb-sub">PQRS</span></div>
+<div class="kb-key" data-val="8"><span class="kb-num">8</span><span class="kb-sub">TUV</span></div>
+<div class="kb-key" data-val="9"><span class="kb-num">9</span><span class="kb-sub">WXYZ</span></div>
+</div>
+<div class="kb-row">
+<div class="kb-key kb-key-action" data-val=","><span class="kb-num">,</span></div>
+<div class="kb-key" data-val="0"><span class="kb-num">0</span></div>
+<div class="kb-key kb-key-action" id="kb-delete">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+</div>
+</div>
+</div>
+</div>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const correctPin = "3626";
-    let enteredPin = "";
-    const lockScreen = document.getElementById('lock-screen');
-    const pinDots = document.querySelectorAll('.pin-dot');
-    const pinKeys = document.querySelectorAll('.pin-key[data-val]');
-    const pinDelete = document.getElementById('pin-delete');
-
-    function updatePinDots() {
-      pinDots.forEach((dot, index) => {
-        if (index < enteredPin.length) {
-          dot.classList.add('filled');
-        } else {
-          dot.classList.remove('filled');
-        }
-      });
-    }
-
-    pinKeys.forEach(key => {
-      key.addEventListener('click', () => {
-        if (enteredPin.length < 4) {
-          enteredPin += key.getAttribute('data-val');
-          updatePinDots();
-
-          if (enteredPin.length === 4) {
-            setTimeout(() => {
-              if (enteredPin === correctPin) {
-                lockScreen.classList.add('hidden');
-              } else {
-                enteredPin = "";
-                updatePinDots();
-              }
-            }, 150);
-          }
-        }
-      });
-    });
-
-    if (pinDelete) {
-      pinDelete.addEventListener('click', () => {
-        if (enteredPin.length > 0) {
-          enteredPin = enteredPin.slice(0, -1);
-          updatePinDots();
-        }
-      });
-    }
-
-    let currentBalance = 152.09;
-    const balanceVal = document.getElementById('balance-val');
-    const transferCardSum = document.getElementById('transfer-card-sum');
-    
-    function updateBalanceDisplay() {
-      if (!isHidden) {
-        balanceVal.textContent = currentBalance.toFixed(2);
-      }
-      if (transferCardSum) {
-        transferCardSum.textContent = currentBalance.toFixed(2) + ' TJS';
-      }
-    }
-
-    const mainScreen = document.getElementById('main-screen');
-    const transferScreen = document.getElementById('transfer-screen');
-    const historyScreen = document.getElementById('history-screen');
-    const bottomNav = document.getElementById('bottom-nav');
-    
-    const goToTransferBtn = document.getElementById('go-to-transfer');
-    const goBackBtn = document.getElementById('go-back');
-
-    const navMain = document.getElementById('nav-main');
-    const navTransfers = document.getElementById('nav-transfers');
-    const navHistory = document.getElementById('nav-history');
-    const navBtns = document.querySelectorAll('.nav-btn');
-
-    function switchScreen(activeScreen) {
-      mainScreen.classList.remove('active');
-      transferScreen.classList.remove('active');
-      historyScreen.classList.remove('active');
-      activeScreen.classList.add('active');
-      hideKeyboard();
-
-      if (activeScreen === transferScreen) {
-        bottomNav.classList.add('hidden');
-      } else {
-        bottomNav.classList.remove('hidden');
-      }
-    }
-
-    function updateNavActive(activeBtn) {
-      navBtns.forEach(btn => btn.classList.remove('active'));
-      activeBtn.classList.add('active');
-    }
-
-    if (goToTransferBtn) {
-      goToTransferBtn.addEventListener('click', () => {
-        switchScreen(transferScreen);
-        updateNavActive(navTransfers);
-      });
-    }
-
-    if (goBackBtn) {
-      goBackBtn.addEventListener('click', () => {
-        switchScreen(mainScreen);
-        updateNavActive(navMain);
-      });
-    }
-
-    if (navMain) {
-      navMain.addEventListener('click', () => {
-        switchScreen(mainScreen);
-        updateNavActive(navMain);
-      });
-    }
-
-    if (navTransfers) {
-      navTransfers.addEventListener('click', () => {
-        switchScreen(transferScreen);
-        updateNavActive(navTransfers);
-      });
-    }
-
-    if (navHistory) {
-      navHistory.addEventListener('click', () => {
-        switchScreen(historyScreen);
-        updateNavActive(navHistory);
-      });
-    }
-
-    const tabOperations = document.getElementById('tab-operations');
-    const tabStatement = document.getElementById('tab-statement');
-    const paneOperations = document.getElementById('pane-operations');
-    const paneStatement = document.getElementById('pane-statement');
-    const tabIndicator = document.getElementById('history-tab-indicator');
-
-    if (tabOperations && tabStatement) {
-      tabOperations.addEventListener('click', () => {
-        tabOperations.classList.add('active');
-        tabStatement.classList.remove('active');
-        paneOperations.classList.add('active');
-        paneStatement.classList.remove('active');
-        tabIndicator.style.transform = 'translateX(0%)';
-      });
-
-      tabStatement.addEventListener('click', () => {
-        tabStatement.classList.add('active');
-        tabOperations.classList.remove('active');
-        paneStatement.classList.add('active');
-        paneOperations.classList.remove('active');
-        tabIndicator.style.transform = 'translateX(100%)';
-      });
-    }
-
-    const barItems = document.querySelectorAll('.bar-item');
-    barItems.forEach(item => {
-      item.addEventListener('click', () => {
-        barItems.forEach(b => b.classList.remove('active'));
-        item.classList.add('active');
-      });
-    });
-
-    const inputBoxes = document.querySelectorAll('.transfer-input-box');
-    const customKeyboard = document.getElementById('custom-keyboard');
-    const defaultNextContainer = document.getElementById('default-next-container');
-    const inputPhone = document.getElementById('input-phone');
-    const inputSum = document.getElementById('input-sum');
-    const inputComment = document.getElementById('input-comment');
-    const kbActionBtn = document.getElementById('kb-action-btn');
-    const mainActionBtn = document.getElementById('main-action-btn');
-    const checkNumberBtn = document.getElementById('check-number-btn');
-
-    const confirmationModal = document.getElementById('confirmation-modal');
-    const viewConfirm = document.getElementById('view-confirm');
-    const viewPending = document.getElementById('view-pending');
-    const viewSuccess = document.getElementById('view-success');
-    const viewReceipt = document.getElementById('view-receipt');
-
-    const modalSumDisplay = document.getElementById('modal-sum-display');
-    const modalPhoneDisplay = document.getElementById('modal-phone-display');
-    const modalZaryadDisplay = document.getElementById('modal-zaryad-display');
-    const modalSpisanieDisplay = document.getElementById('modal-spisanie-display');
-    const modalFinalBtn = document.getElementById('modal-final-btn');
-    const modalMainMenuBtn = document.getElementById('modal-main-menu-btn');
-    const receiptCloseBtn = document.getElementById('receipt-close-btn');
-
-    const pendingPhone = document.getElementById('pending-phone');
-    const pendingSum = document.getElementById('pending-sum');
-    const pendingDate = document.getElementById('pending-date');
-    const pendingTime = document.getElementById('pending-time');
-
-    const successPhone = document.getElementById('success-phone');
-    const successSum = document.getElementById('success-sum');
-    const successDate = document.getElementById('success-date');
-    const successTime = document.getElementById('success-time');
-
-    const receiptDate = document.getElementById('receipt-date');
-    const receiptTime = document.getElementById('receipt-time');
-    const receiptOpNum = document.getElementById('receipt-op-num');
-    const receiptReceiver = document.getElementById('receipt-receiver');
-    const receiptSum = document.getElementById('receipt-sum');
-    
-    const receiptBadgeBox = document.getElementById('receipt-badge-box');
-    const receiptBadgeStatus = document.getElementById('receipt-badge-status');
-    const receiptSumContainer = document.getElementById('receipt-sum-container');
-    const receiptStatusText = document.getElementById('receipt-status-text');
-    const btnShareReceipt = document.getElementById('btn-share-receipt');
-
-    const historyListContainer = document.getElementById('history-list-container');
-    let transactionHistory = [];
-    let currentActiveTxIndex = null;
-
-    let activeInput = null;
-    let activeCaret = null;
-
-    function handleActionClick() {
-      const phoneFilled = inputPhone.value.trim().length > 0;
-      const sumFilled = inputSum.value.trim().length > 0;
-
-      if (phoneFilled && sumFilled) {
-        const rawSum = parseFloat(inputSum.value.replace(',', '.')) || 0;
-        if (rawSum > currentBalance) {
-          alert('Недостаточно средств. Ваш баланс: ' + currentBalance.toFixed(2) + ' TJS');
-          return;
-        }
-
-        if (kbActionBtn.textContent === 'Оплатить' || mainActionBtn.textContent === 'Оплатить') {
-          const formattedSumStr = rawSum.toFixed(2) + ' TJS';
-          
-          modalSumDisplay.textContent = formattedSumStr;
-          modalPhoneDisplay.textContent = inputPhone.value;
-          modalZaryadDisplay.textContent = formattedSumStr;
-          modalSpisanieDisplay.textContent = formattedSumStr;
-
-          viewConfirm.classList.add('active');
-          viewPending.classList.remove('active');
-          viewSuccess.classList.remove('active');
-          viewReceipt.classList.remove('active');
-
-          hideKeyboard();
-          confirmationModal.classList.add('visible');
-        } else {
-          kbActionBtn.textContent = 'Оплатить';
-          mainActionBtn.textContent = 'Оплатить';
-        }
-      } else {
-        alert('Пожалуйста, заполните номер телефона и сумму');
-      }
-    }
-
-    kbActionBtn.addEventListener('click', handleActionClick);
-    mainActionBtn.addEventListener('click', handleActionClick);
-
-    if (checkNumberBtn) {
-      checkNumberBtn.addEventListener('click', () => {
-        kbActionBtn.textContent = 'Далее';
-        mainActionBtn.textContent = 'Далее';
-      });
-    }
-
-    if (modalFinalBtn) {
-      modalFinalBtn.addEventListener('click', () => {
-        const now = new Date();
-        const yyyy = now.getFullYear();
-        const dd = String(now.getDate()).padStart(2, '0');
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const yy = String(yyyy).slice(-2);
-        const hh = String(now.getHours()).padStart(2, '0');
-        const min = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-
-        const dateStrShort = `${dd}.${mm}.${yy}`;
-        const dateStrFull = `${dd}.${mm}.${yyyy}`;
-        const timeStr = `${hh}:${min}:${ss}`;
-        const phoneVal = inputPhone.value;
-        const rawSum = parseFloat(inputSum.value.replace(',', '.')) || 0;
-        const sumVal = rawSum.toFixed(2);
-        const opNumber = Math.floor(100000000 + Math.random() * 900000000);
-
-        currentBalance -= rawSum;
-        if (currentBalance < 0) currentBalance = 0;
-        updateBalanceDisplay();
-
-        pendingPhone.textContent = phoneVal;
-        pendingSum.textContent = sumVal;
-        pendingDate.textContent = dateStrShort;
-        pendingTime.textContent = timeStr;
-
-        successPhone.textContent = phoneVal;
-        successSum.textContent = sumVal;
-        successDate.textContent = dateStrShort;
-        successTime.textContent = timeStr;
-
-        let cleanPhone = phoneVal.trim();
-        if (cleanPhone.startsWith('9929')) {
-          cleanPhone = '992' + cleanPhone.slice(4);
-        } else if (!cleanPhone.startsWith('992')) {
-          cleanPhone = '992' + cleanPhone;
-        }
-
-        const newTx = {
-          title: 'DC (по номеру телефона)',
-          cardNumber: '4713***6631',
-          receiver: cleanPhone,
-          sum: `${sumVal} TJS`,
-          time: timeStr,
-          fullDate: dateStrFull,
-          fullTime: timeStr,
-          opNum: opNumber,
-          sumVal: `${sumVal} TJS`,
-          isRefunded: false
-        };
-
-        transactionHistory.unshift(newTx);
-        renderHistory();
-
-        viewConfirm.classList.remove('active');
-        viewPending.classList.add('active');
-        viewSuccess.classList.remove('active');
-        viewReceipt.classList.remove('active');
-
-        setTimeout(() => {
-          viewPending.classList.remove('active');
-          viewSuccess.classList.add('active');
-        }, 2500);
-      });
-    }
-
-    if (btnShareReceipt) {
-      btnShareReceipt.addEventListener('click', () => {
-        if (currentActiveTxIndex !== null && transactionHistory[currentActiveTxIndex]) {
-          transactionHistory[currentActiveTxIndex].isRefunded = true;
-          applyReceiptRefundStyle(true);
-        }
-      });
-    }
-
-    function applyReceiptRefundStyle(isRefunded) {
-      if (isRefunded) {
-        receiptBadgeBox.style.borderColor = '#ef4444';
-        receiptBadgeStatus.textContent = 'ВОЗВРАТ СРЕДСТВ';
-        receiptBadgeStatus.style.color = '#ef4444';
-        
-        receiptSumContainer.classList.add('is-refunded');
-        
-        receiptStatusText.textContent = 'Ошибка';
-        receiptStatusText.style.color = '#ef4444';
-      } else {
-        receiptBadgeBox.style.borderColor = '#007aff';
-        receiptBadgeStatus.textContent = 'ОПЕРАЦИЯ ВЫПОЛНЕНА';
-        receiptBadgeStatus.style.color = '#007aff';
-        
-        receiptSumContainer.classList.remove('is-refunded');
-        
-        receiptStatusText.textContent = 'Успешный';
-        receiptStatusText.style.color = '#10b981';
-      }
-    }
-
-    function renderHistory() {
-      if (transactionHistory.length === 0) {
-        historyListContainer.innerHTML = '<div class="history-empty">У вас пока нет истории переводов</div>';
-        return;
-      }
-
-      let html = '';
-      transactionHistory.forEach((item, index) => {
-        html += `
-          <div class="history-item" data-index="${index}">
-            <div class="history-left">
-              <span class="history-card-num">${item.cardNumber}</span>
-              <span class="history-title">${item.receiver}</span>
-              <span class="history-subtitle">${item.title}</span>
-            </div>
-            <div class="history-right">
-              <div class="history-sum-row">
-                <span class="history-sum">${item.sum}</span>
-                <span class="history-check-icon">✓</span>
-              </div>
-              <span class="history-time">${item.time}</span>
-            </div>
-          </div>
-        `;
-      });
-      historyListContainer.innerHTML = html;
-
-      document.querySelectorAll('.history-item').forEach(el => {
-        el.addEventListener('click', () => {
-          const idx = el.getAttribute('data-index');
-          currentActiveTxIndex = parseInt(idx, 10);
-          const tx = transactionHistory[currentActiveTxIndex];
-
-          receiptDate.textContent = tx.fullDate;
-          receiptTime.textContent = tx.fullTime;
-          receiptOpNum.textContent = tx.opNum;
-          receiptReceiver.textContent = tx.receiver;
-          receiptSum.textContent = tx.sumVal;
-
-          applyReceiptRefundStyle(tx.isRefunded);
-
-          viewConfirm.classList.remove('active');
-          viewPending.classList.remove('active');
-          viewSuccess.classList.remove('active');
-          viewReceipt.classList.add('active');
-
-          confirmationModal.classList.add('visible');
-        });
-      });
-    }
-
-    if (modalMainMenuBtn) {
-      modalMainMenuBtn.addEventListener('click', () => {
-        confirmationModal.classList.remove('visible');
-        
-        inputPhone.value = '';
-        inputSum.value = '';
-        inputComment.value = '';
-        kbActionBtn.textContent = 'Далее';
-        mainActionBtn.textContent = 'Далее';
-
-        switchScreen(mainScreen);
-        updateNavActive(navMain);
-      });
-    }
-
-    if (receiptCloseBtn) {
-      receiptCloseBtn.addEventListener('click', () => {
-        confirmationModal.classList.remove('visible');
-      });
-    }
-
-    confirmationModal.addEventListener('click', (e) => {
-      if (e.target === confirmationModal && (viewConfirm.classList.contains('active') || viewReceipt.classList.contains('active'))) {
-        confirmationModal.classList.remove('visible');
-      }
-    });
-
-    inputBoxes.forEach(box => {
-      box.addEventListener('click', (e) => {
-        e.stopPropagation();
-        
-        inputBoxes.forEach(b => {
-          b.classList.remove('focused');
-        });
-
-        box.classList.add('focused');
-        
-        activeInput = box.querySelector('input');
-        activeCaret = box.querySelector('.custom-caret');
-        
-        updateCaretPosition();
-        showKeyboard();
-      });
-    });
-
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.transfer-input-box') && !e.target.closest('.keyboard-container') && !e.target.closest('.confirmation-modal')) {
-        hideKeyboard();
-      }
-    });
-
-    function showKeyboard() {
-      customKeyboard.classList.add('visible');
-      defaultNextContainer.classList.add('hidden');
-    }
-
-    function hideKeyboard() {
-      customKeyboard.classList.remove('visible');
-      defaultNextContainer.classList.remove('hidden');
-      inputBoxes.forEach(b => b.classList.remove('focused'));
-      activeInput = null;
-      activeCaret = null;
-    }
-
-    function updateCaretPosition() {
-      if (!activeInput || !activeCaret) return;
-      
-      const val = activeInput.value;
-      
-      if (val.length === 0) {
-        activeCaret.style.left = '16px';
-        return;
-      }
-      
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      context.font = '600 14px -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif';
-      const textWidth = context.measureText(val).width;
-      
-      activeCaret.style.left = (16 + textWidth) + 'px';
-    }
-
-    const keys = document.querySelectorAll('.kb-key[data-val]');
-    keys.forEach(key => {
-      key.addEventListener('click', () => {
-        if (!activeInput) return;
-        const val = key.getAttribute('data-val');
-        activeInput.value += val;
-        updateCaretPosition();
-      });
-    });
-
-    const deleteBtn = document.getElementById('kb-delete');
-    if (deleteBtn) {
-      deleteBtn.addEventListener('click', () => {
-        if (!activeInput) return;
-        activeInput.value = activeInput.value.slice(0, -1);
-        updateCaretPosition();
-      });
-    }
-
-    const toggleBtn = document.getElementById('toggle-visibility');
-    const refreshBtn = document.getElementById('refresh-balance');
-    const balanceBlock = document.getElementById('balance-block');
-    let isHidden = false;
-
-    function updateTime() {
-      const now = new Date();
-      const dd = String(now.getDate()).padStart(2, '0');
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const yy = String(now.getFullYear()).slice(-2);
-      const hh = String(now.getHours()).padStart(2, '0');
-      const min = String(now.getMinutes()).padStart(2, '0');
-      const ss = String(now.getSeconds()).padStart(2, '0');
-      
-      const timeDisplay = document.getElementById('current-time-display');
-      if (timeDisplay) {
-        timeDisplay.textContent = `${dd}.${mm}.${yy} - ${hh}:${min}:${ss}`;
-      }
-
-      const historyUpdateTime = document.getElementById('history-update-time');
-      const statementUpdateTime = document.getElementById('statement-update-time');
-      const formattedHistoryTime = `${dd}.${mm}.${yy} - ${hh}:${min}`;
-      if (historyUpdateTime) historyUpdateTime.textContent = formattedHistoryTime;
-      if (statementUpdateTime) statementUpdateTime.textContent = formattedHistoryTime;
-    }
-
-    updateTime();
-
-    if (toggleBtn && balanceVal) {
-      toggleBtn.addEventListener('click', () => {
-        balanceVal.style.opacity = '0';
-        setTimeout(() => {
-          isHidden = !isHidden;
-          if (isHidden) {
-            balanceVal.textContent = '••••••';
-            balanceVal.classList.add('hidden-mode');
-          } else {
-            balanceVal.textContent = currentBalance.toFixed(2);
-            balanceVal.classList.remove('hidden-mode');
-          }
-          balanceVal.style.opacity = '1';
-        }, 150);
-      });
-    }
-
-    if (refreshBtn && balanceBlock) {
-      refreshBtn.addEventListener('click', () => {
-        if (refreshBtn.classList.contains('is-refreshing')) return;
-
-        refreshBtn.classList.add('is-refreshing');
-        balanceBlock.classList.add('is-loading');
-
-        setTimeout(() => {
-          updateTime();
-          balanceBlock.classList.remove('is-loading');
-          refreshBtn.classList.remove('is-refreshing');
-        }, 1000);
-      });
-    }
-  });
+document.addEventListener('DOMContentLoaded', () => {
+const correctPin = "3626";
+let enteredPin = "";
+const lockScreen = document.getElementById('lock-screen');
+const pinDots = document.querySelectorAll('.pin-dot');
+const pinKeys = document.querySelectorAll('.pin-key[data-val]');
+const pinDelete = document.getElementById('pin-delete');
+
+function updatePinDots() {
+pinDots.forEach((dot, index) => {
+if (index < enteredPin.length) {
+dot.classList.add('filled');
+} else {
+dot.classList.remove('filled');
+}
+});
+}
+
+pinKeys.forEach(key => {
+key.addEventListener('click', () => {
+if (enteredPin.length < 4) {
+enteredPin += key.getAttribute('data-val');
+updatePinDots();
+if (enteredPin.length === 4) {
+setTimeout(() => {
+if (enteredPin === correctPin) {
+lockScreen.classList.add('hidden');
+} else {
+enteredPin = "";
+updatePinDots();
+}
+}, 150);
+}
+}
+});
+});
+
+if (pinDelete) {
+pinDelete.addEventListener('click', () => {
+if (enteredPin.length > 0) {
+enteredPin = enteredPin.slice(0, -1);
+updatePinDots();
+}
+});
+}
+
+const openSidebarBtn = document.getElementById('open-sidebar-btn');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+function openSidebar() {
+sidebar.classList.add('active');
+sidebarOverlay.classList.add('active');
+}
+
+function closeSidebar() {
+sidebar.classList.remove('active');
+sidebarOverlay.classList.remove('active');
+}
+
+if (openSidebarBtn) {
+openSidebarBtn.addEventListener('click', openSidebar);
+}
+if (sidebarOverlay) {
+sidebarOverlay.addEventListener('click', closeSidebar);
+}
+
+let currentBalance = 152.09;
+const balanceVal = document.getElementById('balance-val');
+const transferCardSum = document.getElementById('transfer-card-sum');
+function updateBalanceDisplay() {
+if (!isHidden) {
+balanceVal.textContent = currentBalance.toFixed(2);
+}
+if (transferCardSum) {
+transferCardSum.textContent = currentBalance.toFixed(2) + ' TJS';
+}
+}
+const bellIcon = document.getElementById('bell-icon');
+if (bellIcon) {
+bellIcon.addEventListener('click', () => {
+currentBalance += 10;
+updateBalanceDisplay();
+});
+}
+const mainScreen = document.getElementById('main-screen');
+const transferScreen = document.getElementById('transfer-screen');
+const historyScreen = document.getElementById('history-screen');
+const bottomNav = document.getElementById('bottom-nav');
+const goToTransferBtn = document.getElementById('go-to-transfer');
+const goBackBtn = document.getElementById('go-back');
+const navMain = document.getElementById('nav-main');
+const navTransfers = document.getElementById('nav-transfers');
+const navHistory = document.getElementById('nav-history');
+const navBtns = document.querySelectorAll('.nav-btn');
+function switchScreen(activeScreen) {
+mainScreen.classList.remove('active');
+transferScreen.classList.remove('active');
+historyScreen.classList.remove('active');
+activeScreen.classList.add('active');
+hideKeyboard();
+if (activeScreen === transferScreen) {
+bottomNav.classList.add('hidden');
+} else {
+bottomNav.classList.remove('hidden');
+}
+}
+function updateNavActive(activeBtn) {
+navBtns.forEach(btn => btn.classList.remove('active'));
+activeBtn.classList.add('active');
+}
+if (goToTransferBtn) {
+goToTransferBtn.addEventListener('click', () => {
+switchScreen(transferScreen);
+updateNavActive(navTransfers);
+});
+}
+if (goBackBtn) {
+goBackBtn.addEventListener('click', () => {
+switchScreen(mainScreen);
+updateNavActive(navMain);
+});
+}
+if (navMain) {
+navMain.addEventListener('click', () => {
+switchScreen(mainScreen);
+updateNavActive(navMain);
+});
+}
+if (navTransfers) {
+navTransfers.addEventListener('click', () => {
+switchScreen(transferScreen);
+updateNavActive(navTransfers);
+});
+}
+if (navHistory) {
+navHistory.addEventListener('click', () => {
+switchScreen(historyScreen);
+updateNavActive(navHistory);
+});
+}
+const tabOperations = document.getElementById('tab-operations');
+const tabStatement = document.getElementById('tab-statement');
+const paneOperations = document.getElementById('pane-operations');
+const paneStatement = document.getElementById('pane-statement');
+const tabIndicator = document.getElementById('history-tab-indicator');
+if (tabOperations && tabStatement) {
+tabOperations.addEventListener('click', () => {
+tabOperations.classList.add('active');
+tabStatement.classList.remove('active');
+paneOperations.classList.add('active');
+paneStatement.classList.remove('active');
+tabIndicator.style.transform = 'translateX(0%)';
+});
+tabStatement.addEventListener('click', () => {
+tabStatement.classList.add('active');
+tabOperations.classList.remove('active');
+paneStatement.classList.add('active');
+paneOperations.classList.remove('active');
+tabIndicator.style.transform = 'translateX(100%)';
+});
+}
+
+const barItems = document.querySelectorAll('.bar-item');
+function syncCurrentDayChart() {
+const now = new Date();
+let dayOfWeek = now.getDay();
+let activeIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+
+barItems.forEach((item, index) => {
+if (index === activeIndex) {
+item.classList.add('active');
+} else {
+item.classList.remove('active');
+}
+});
+}
+syncCurrentDayChart();
+
+barItems.forEach(item => {
+item.addEventListener('click', () => {
+barItems.forEach(b => b.classList.remove('active'));
+item.classList.add('active');
+});
+});
+
+const inputBoxes = document.querySelectorAll('.transfer-input-box');
+const customKeyboard = document.getElementById('custom-keyboard');
+const defaultNextContainer = document.getElementById('default-next-container');
+const inputPhone = document.getElementById('input-phone');
+const inputSum = document.getElementById('input-sum');
+const inputComment = document.getElementById('input-comment');
+const kbActionBtn = document.getElementById('kb-action-btn');
+const mainActionBtn = document.getElementById('main-action-btn');
+const checkNumberBtn = document.getElementById('check-number-btn');
+const confirmationModal = document.getElementById('confirmation-modal');
+const viewConfirm = document.getElementById('view-confirm');
+const viewPending = document.getElementById('view-pending');
+const viewSuccess = document.getElementById('view-success');
+const viewReceipt = document.getElementById('view-receipt');
+const modalSumDisplay = document.getElementById('modal-sum-display');
+const modalPhoneDisplay = document.getElementById('modal-phone-display');
+const modalZaryadDisplay = document.getElementById('modal-zaryad-display');
+const modalSpisanieDisplay = document.getElementById('modal-spisanie-display');
+const modalFinalBtn = document.getElementById('modal-final-btn');
+const modalMainMenuBtn = document.getElementById('modal-main-menu-btn');
+const receiptCloseBtn = document.getElementById('receipt-close-btn');
+const pendingPhone = document.getElementById('pending-phone');
+const pendingSum = document.getElementById('pending-sum');
+const pendingDate = document.getElementById('pending-date');
+const pendingTime = document.getElementById('pending-time');
+const successPhone = document.getElementById('success-phone');
+const successSum = document.getElementById('success-sum');
+const successDate = document.getElementById('success-date');
+const successTime = document.getElementById('success-time');
+const receiptDate = document.getElementById('receipt-date');
+const receiptTime = document.getElementById('receipt-time');
+const receiptOpNum = document.getElementById('receipt-op-num');
+const receiptReceiver = document.getElementById('receipt-receiver');
+const receiptSum = document.getElementById('receipt-sum');
+const receiptBadgeBox = document.getElementById('receipt-badge-box');
+const receiptBadgeStatus = document.getElementById('receipt-badge-status');
+const receiptSumContainer = document.getElementById('receipt-sum-container');
+const receiptStatusText = document.getElementById('receipt-status-text');
+const btnShareReceipt = document.getElementById('btn-share-receipt');
+const historyListContainer = document.getElementById('history-list-container');
+
+let transactionHistory = [
+{
+title: 'DC (по номеру телефона)',
+cardNumber: '4713***6631',
+receiver: '992552055959',
+sum: '17.00 TJS',
+time: '00:15:19',
+fullDate: '29.08.2026',
+fullTime: '00:15:19',
+opNum: '675254112',
+sumVal: '17.00 TJS',
+isRefunded: false
+}
+];
+let currentActiveTxIndex = null;
+let activeInput = null;
+let activeCaret = null;
+
+renderHistory();
+
+function handleActionClick() {
+const phoneFilled = inputPhone.value.trim().length > 0;
+const sumFilled = inputSum.value.trim().length > 0;
+if (phoneFilled && sumFilled) {
+const rawSum = parseFloat(inputSum.value.replace(',', '.')) || 0;
+if (rawSum > currentBalance) {
+alert('Недостаточно средств. Ваш баланс: ' + currentBalance.toFixed(2) + ' TJS');
+return;
+}
+if (kbActionBtn.textContent === 'Оплатить' || mainActionBtn.textContent === 'Оплатить') {
+const formattedSumStr = rawSum.toFixed(2) + ' TJS';
+modalSumDisplay.textContent = formattedSumStr;
+modalPhoneDisplay.textContent = inputPhone.value;
+modalZaryadDisplay.textContent = formattedSumStr;
+modalSpisanieDisplay.textContent = formattedSumStr;
+viewConfirm.classList.add('active');
+viewPending.classList.remove('active');
+viewSuccess.classList.remove('active');
+viewReceipt.classList.remove('active');
+hideKeyboard();
+confirmationModal.classList.add('visible');
+} else {
+kbActionBtn.textContent = 'Оплатить';
+mainActionBtn.textContent = 'Оплатить';
+}
+} else {
+alert('Пожалуйста, заполните номер телефона и сумму');
+}
+}
+kbActionBtn.addEventListener('click', handleActionClick);
+mainActionBtn.addEventListener('click', handleActionClick);
+if (checkNumberBtn) {
+checkNumberBtn.addEventListener('click', () => {
+kbActionBtn.textContent = 'Далее';
+mainActionBtn.textContent = 'Далее';
+});
+}
+if (modalFinalBtn) {
+modalFinalBtn.addEventListener('click', () => {
+const now = new Date();
+updateDateTimeStrings();
+const yyyy = now.getFullYear();
+const dd = String(now.getDate()).padStart(2, '0');
+const mm = String(now.getMonth() + 1).padStart(2, '0');
+const yy = String(yyyy).slice(-2);
+const hh = String(now.getHours()).padStart(2, '0');
+const min = String(now.getMinutes()).padStart(2, '0');
+const ss = String(now.getSeconds()).padStart(2, '0');
+const dateStrShort = `${dd}.${mm}.${yy}`;
+const dateStrFull = `${dd}.${mm}.${yyyy}`;
+const timeStr = `${hh}:${min}:${ss}`;
+const phoneVal = inputPhone.value;
+const rawSum = parseFloat(inputSum.value.replace(',', '.')) || 0;
+const sumVal = rawSum.toFixed(2);
+const opNumber = Math.floor(100000000 + Math.random() * 900000000);
+currentBalance -= rawSum;
+if (currentBalance < 0) currentBalance = 0;
+updateBalanceDisplay();
+pendingPhone.textContent = phoneVal;
+pendingSum.textContent = sumVal;
+pendingDate.textContent = dateStrShort;
+pendingTime.textContent = timeStr;
+successPhone.textContent = phoneVal;
+successSum.textContent = sumVal;
+successDate.textContent = dateStrShort;
+successTime.textContent = timeStr;
+let cleanPhone = phoneVal.trim();
+if (cleanPhone.startsWith('9929')) {
+cleanPhone = '992' + cleanPhone.slice(4);
+} else if (!cleanPhone.startsWith('992')) {
+cleanPhone = '992' + cleanPhone;
+}
+const newTx = {
+title: 'DC (по номеру телефона)',
+cardNumber: '4713***6631',
+receiver: cleanPhone,
+sum: `${sumVal} TJS`,
+time: timeStr,
+fullDate: dateStrFull,
+fullTime: timeStr,
+opNum: opNumber,
+sumVal: `${sumVal} TJS`,
+isRefunded: false
+};
+transactionHistory.unshift(newTx);
+renderHistory();
+viewConfirm.classList.remove('active');
+viewPending.classList.add('active');
+viewSuccess.classList.remove('active');
+viewReceipt.classList.remove('active');
+setTimeout(() => {
+viewPending.classList.remove('active');
+viewSuccess.classList.add('active');
+}, 2500);
+});
+}
+if (btnShareReceipt) {
+btnShareReceipt.addEventListener('click', () => {
+if (currentActiveTxIndex !== null && transactionHistory[currentActiveTxIndex]) {
+transactionHistory[currentActiveTxIndex].isRefunded = true;
+applyReceiptRefundStyle(true);
+renderHistory();
+}
+});
+}
+function applyReceiptRefundStyle(isRefunded) {
+if (isRefunded) {
+receiptBadgeBox.style.borderColor = '#ef4444';
+receiptBadgeStatus.innerHTML = 'ВОЗВРАТ<br>СРЕДСТВ';
+receiptBadgeStatus.style.color = '#ef4444';
+receiptSumContainer.classList.add('is-refunded');
+receiptStatusText.textContent = 'Ошибка';
+receiptStatusText.style.color = '#ef4444';
+} else {
+receiptBadgeBox.style.borderColor = '#2da1ff';
+receiptBadgeStatus.innerHTML = 'ОПЕРАЦИЯ<br>ВЫПОЛНЕНА';
+receiptBadgeStatus.style.color = '#2da1ff';
+receiptSumContainer.classList.remove('is-refunded');
+receiptStatusText.textContent = 'Успешный';
+receiptStatusText.style.color = '#34c759';
+}
+}
+function renderHistory() {
+if (transactionHistory.length === 0) {
+historyListContainer.innerHTML = '<div class="history-empty">У вас пока нет истории переводов</div>';
+return;
+}
+let html = '';
+transactionHistory.forEach((item, index) => {
+const checkIconClass = item.isRefunded ? 'history-check-icon error-icon' : 'history-check-icon';
+const checkIconSymbol = item.isRefunded ? '✕' : '✓';
+html += `<div class="history-item" data-index="${index}"> <div class="history-left"> <span class="history-card-num">${item.cardNumber}</span> <span class="history-title">${item.receiver}</span> <span class="history-subtitle">${item.title}</span> </div> <div class="history-right"> <div class="history-sum-row"> <span class="history-sum">${item.sum}</span> <span class="${checkIconClass}">${checkIconSymbol}</span> </div> <span class="history-time">${item.time}</span> </div> </div>`;
+});
+historyListContainer.innerHTML = html;
+document.querySelectorAll('.history-item').forEach(el => {
+el.addEventListener('click', () => {
+const idx = el.getAttribute('data-index');
+currentActiveTxIndex = parseInt(idx, 10);
+const tx = transactionHistory[currentActiveTxIndex];
+receiptDate.textContent = tx.fullDate;
+receiptTime.textContent = tx.fullTime;
+receiptOpNum.textContent = tx.opNum;
+receiptReceiver.textContent = tx.receiver;
+receiptSum.textContent = tx.sumVal;
+applyReceiptRefundStyle(tx.isRefunded);
+viewConfirm.classList.remove('active');
+viewPending.classList.remove('active');
+viewSuccess.classList.remove('active');
+viewReceipt.classList.add('active');
+confirmationModal.classList.add('visible');
+});
+});
+}
+if (modalMainMenuBtn) {
+modalMainMenuBtn.addEventListener('click', () => {
+confirmationModal.classList.remove('visible');
+inputPhone.value = '';
+inputSum.value = '';
+inputComment.value = '';
+kbActionBtn.textContent = 'Далее';
+mainActionBtn.textContent = 'Далее';
+switchScreen(mainScreen);
+updateNavActive(navMain);
+});
+}
+if (receiptCloseBtn) {
+receiptCloseBtn.addEventListener('click', () => {
+confirmationModal.classList.remove('visible');
+});
+}
+
+confirmationModal.addEventListener('click', (e) => {
+if (e.target === confirmationModal) {
+confirmationModal.classList.remove('visible');
+}
+});
+
+inputBoxes.forEach(box => {
+box.addEventListener('click', (e) => {
+e.stopPropagation();
+inputBoxes.forEach(b => {
+b.classList.remove('focused');
+});
+box.classList.add('focused');
+activeInput = box.querySelector('input');
+activeCaret = box.querySelector('.custom-caret');
+updateCaretPosition();
+showKeyboard();
+});
+});
+
+document.addEventListener('click', (e) => {
+if (!e.target.closest('.transfer-input-box') && !e.target.closest('.keyboard-container') && !e.target.closest('.confirmation-modal')) {
+hideKeyboard();
+}
+});
+function showKeyboard() {
+customKeyboard.classList.add('visible');
+defaultNextContainer.classList.add('hidden');
+}
+function hideKeyboard() {
+customKeyboard.classList.remove('visible');
+defaultNextContainer.classList.remove('hidden');
+inputBoxes.forEach(b => b.classList.remove('focused'));
+activeInput = null;
+activeCaret = null;
+}
+const kbKeys = document.querySelectorAll('.kb-key[data-val]');
+const kbDelete = document.getElementById('kb-delete');
+kbKeys.forEach(key => {
+key.addEventListener('click', () => {
+if (!activeInput) return;
+const val = key.getAttribute('data-val');
+let text = activeInput.value;
+if (activeInput.id === 'input-phone') {
+if (text.length < 15) {
+text += val;
+activeInput.value = text;
+}
+} else if (activeInput.id === 'input-sum') {
+if (text.length < 8) {
+text += val;
+activeInput.value = text;
+}
+} else {
+text += val;
+activeInput.value = text;
+}
+updateCaretPosition();
+});
+});
+if (kbDelete) {
+kbDelete.addEventListener('click', () => {
+if (!activeInput) return;
+let text = activeInput.value;
+if (text.length > 0) {
+activeInput.value = text.slice(0, -1);
+updateCaretPosition();
+}
+});
+}
+function updateCaretPosition() {
+if (!activeInput || !activeCaret) return;
+const text = activeInput.value;
+const tempSpan = document.createElement('span');
+tempSpan.style.font = window.getComputedStyle(activeInput).font;
+tempSpan.style.visibility = 'hidden';
+tempSpan.style.position = 'absolute';
+tempSpan.textContent = text;
+document.body.appendChild(tempSpan);
+const textWidth = tempSpan.getBoundingClientRect().width;
+document.body.removeChild(tempSpan);
+activeCaret.style.left = (16 + textWidth) + 'px';
+}
+const nowDisplay = document.getElementById('current-time-display');
+const historyUpdateTime = document.getElementById('history-update-time');
+const statementUpdateTime = document.getElementById('statement-update-time');
+
+function updateDateTimeStrings() {
+const now = new Date();
+const dd = String(now.getDate()).padStart(2, '0');
+const mm = String(now.getMonth() + 1).padStart(2, '0');
+const yy = String(now.getFullYear()).slice(-2);
+const hh = String(now.getHours()).padStart(2, '0');
+const min = String(now.getMinutes()).padStart(2, '0');
+const ss = String(now.getSeconds()).padStart(2, '0');
+const str1 = `${dd}.${mm}.${yy} - ${hh}:${min}:${ss}`;
+const str2 = `${dd}.${mm}.${yy} - ${hh}:${min}`;
+if (nowDisplay) nowDisplay.textContent = str1;
+if (historyUpdateTime) historyUpdateTime.textContent = str2;
+if (statementUpdateTime) statementUpdateTime.textContent = str2;
+}
+
+updateDateTimeStrings();
+
+let isHidden = false;
+const toggleVisibilityBtn = document.getElementById('toggle-visibility');
+if (toggleVisibilityBtn) {
+toggleVisibilityBtn.addEventListener('click', () => {
+isHidden = !isHidden;
+if (isHidden) {
+balanceVal.classList.add('hidden-mode');
+balanceVal.textContent = '••••••';
+} else {
+balanceVal.classList.remove('hidden-mode');
+updateBalanceDisplay();
+}
+});
+}
+
+const refreshBalanceBtn = document.getElementById('refresh-balance');
+if (refreshBalanceBtn) {
+refreshBalanceBtn.addEventListener('click', () => {
+refreshBalanceBtn.classList.add('is-refreshing');
+document.getElementById('balance-block').classList.add('is-loading');
+setTimeout(() => {
+refreshBalanceBtn.classList.remove('is-refreshing');
+document.getElementById('balance-block').classList.remove('is-loading');
+updateDateTimeStrings();
+}, 1000);
+});
+}
+});
 </script>
-
 </body>
 </html>
+
+      
