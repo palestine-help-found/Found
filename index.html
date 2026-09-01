@@ -6,14 +6,32 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f4f6fa">
-<title>DC Wallet - Transfer & History</title>
+<title>DC Wallet</title>
 <style>
 * {
 box-sizing: border-box;
 margin: 0;
 padding: 0;
-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Roboto, Arial, sans-serif;
+-webkit-tap-highlight-color: transparent;
 }
+
+/* Восстанавливаем естественный скролл страницы для эффекта "резинки" */
+html, body {
+background-color: #f4f6fa;
+width: 100%;
+color: #0f172a;
+}
+
+.app-container {
+width: 100%;
+max-width: 100%;
+background: #f4f6fa;
+position: relative;
+min-height: 100vh;
+overflow-x: hidden;
+}
+
 /* ЭКРАН БЛОКИРОВКИ (PIN-код) */
 #lock-screen {
 position: fixed;
@@ -34,7 +52,7 @@ pointer-events: none;
 .lock-logo {
 width: 64px;
 height: 64px;
-background: #007aff;
+background: #2b74f6;
 border-radius: 20px;
 display: flex;
 align-items: center;
@@ -43,11 +61,11 @@ color: white;
 font-weight: 900;
 font-size: 24px;
 margin-bottom: 20px;
-box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
+box-shadow: 0 8px 20px rgba(43, 116, 246, 0.3);
 }
 .lock-title {
 font-size: 18px;
-font-weight: 800;
+font-weight: 750;
 color: #0f172a;
 margin-bottom: 6px;
 }
@@ -71,7 +89,7 @@ background: #cbd5e1;
 transition: background 0.2s, transform 0.2s;
 }
 .pin-dot.filled {
-background: #007aff;
+background: #2b74f6;
 transform: scale(1.1);
 }
 .pin-keyboard {
@@ -104,44 +122,88 @@ box-shadow: none;
 font-size: 16px;
 color: #64748b;
 }
-body {
-background-color: #f4f6fa;
-margin: 0;
-padding: 0;
-display: flex;
-justify-content: center;
-}
-.app-container {
-width: 100%;
-max-width: 100%;
-background: #f4f6fa;
-position: relative;
-min-height: 100vh;
-overflow-x: hidden;
-}
+
+/* iOS SWIPE ANIMATIONS FOR SCREENS */
 .screen {
 display: none;
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+min-height: 100vh;
+background: #f4f6fa;
+will-change: transform;
 }
+
 .screen.active {
 display: block;
+position: relative;
+z-index: 1;
+transform: translateX(0);
 }
+
+.screen.slide-in-right {
+display: block;
+z-index: 2;
+animation: slideInRight 0.38s cubic-bezier(0.36, 0.66, 0.04, 1) forwards;
+}
+
+.screen.slide-out-left {
+display: block;
+z-index: 1;
+animation: slideOutLeft 0.38s cubic-bezier(0.36, 0.66, 0.04, 1) forwards;
+}
+
+.screen.slide-out-right {
+display: block;
+z-index: 2;
+animation: slideOutRight 0.38s cubic-bezier(0.36, 0.66, 0.04, 1) forwards;
+}
+
+.screen.slide-in-left {
+display: block;
+z-index: 1;
+animation: slideInLeft 0.38s cubic-bezier(0.36, 0.66, 0.04, 1) forwards;
+}
+
+@keyframes slideInRight {
+from { transform: translateX(100%); }
+to { transform: translateX(0); }
+}
+
+@keyframes slideOutLeft {
+from { transform: translateX(0); }
+to { transform: translateX(-25%); }
+}
+
+@keyframes slideOutRight {
+from { transform: translateX(0); }
+to { transform: translateX(100%); }
+}
+
+@keyframes slideInLeft {
+from { transform: translateX(-25%); }
+to { transform: translateX(0); }
+}
+
+/* MAIN SCREEN STYLES */
 #main-screen {
-padding: calc(12px + env(safe-area-inset-top)) 16px calc(80px + env(safe-area-inset-bottom)) 16px;
+padding: calc(6px + env(safe-area-inset-top)) 16px calc(100px + env(safe-area-inset-bottom)) 16px;
 }
+
+/* TOP NAV BAR */
 .top-nav {
 display: flex;
 justify-content: space-between;
 align-items: center;
-margin-bottom: 14px;
+margin-bottom: 12px;
 padding: 2px 0;
 }
-.top-nav-left, .top-nav-right {
-cursor: pointer;
-}
-.top-nav-left svg, .top-nav-right svg {
-width: 24px;
-height: 24px;
-fill: #2563eb;
+.top-nav-left svg {
+width: 25px;
+height: 25px;
+stroke: #2b74f6;
+stroke-width: 2.3;
 }
 .top-nav-right {
 display: flex;
@@ -151,8 +213,12 @@ align-items: center;
 .top-nav-right svg {
 width: 22px;
 height: 22px;
+stroke: #2b74f6;
+stroke-width: 2;
+fill: none;
 }
-/* БОКОВОЕ МЕНЮ (САЙДБАР) */
+
+/* SIDEBAR STYLES */
 .sidebar-overlay {
 position: fixed;
 top: 0; left: 0; right: 0; bottom: 0;
@@ -199,13 +265,13 @@ gap: 12px;
 .sidebar-avatar {
 width: 48px;
 height: 48px;
-background: #007aff;
+background: #2b74f6;
 border-radius: 50%;
 display: flex;
 align-items: center;
 justify-content: center;
 color: white;
-font-weight: 800;
+font-weight: 750;
 font-size: 18px;
 flex-shrink: 0;
 }
@@ -217,7 +283,7 @@ overflow: hidden;
 }
 .sidebar-name {
 font-size: 15px;
-font-weight: 800;
+font-weight: 750;
 color: #0f172a;
 white-space: nowrap;
 overflow: hidden;
@@ -248,45 +314,45 @@ cursor: pointer;
 .sidebar-item:active {
 background: #f1f5f9;
 }
-.sidebar-item svg {
-width: 20px;
-height: 20px;
-fill: #007aff;
+.sidebar-item svg.styled-icon {
+width: 40px !important;
+height: 40px !important;
+border-radius: 12px !important;
+flex-shrink: 0;
+margin-right: 12px;
+fill: none;
 }
-.sidebar-divider {
-height: 1px;
-background: #f1f5f9;
-margin: 8px 0;
-}
+
+/* BLUE BALANCE CARD */
 .balance-container {
 display: flex;
 gap: 10px;
 align-items: stretch;
 width: 100%;
-margin-bottom: 16px;
+margin-bottom: 18px;
 }
 .balance-blue-card {
 flex: 1;
-background-color: #007aff;
-border-radius: 22px;
-padding: 24px 20px 22px 20px;
+background-color: #2b74f6;
+border-radius: 18px;
+padding: 16px 20px 14px 20px;
 color: #ffffff;
-display: flex;
-justify-content: space-between;
-align-items: flex-start;
-box-shadow: 0 4px 14px rgba(0, 122, 255, 0.2);
-}
-.balance-left {
 display: flex;
 flex-direction: column;
 justify-content: center;
-position: relative;
+box-shadow: 0 4px 16px rgba(43, 116, 246, 0.22);
+min-height: 106px;
+}
+.balance-top-row {
+display: flex;
+justify-content: space-between;
+align-items: center;
+width: 100%;
 }
 .balance-amount-row {
 display: flex;
 align-items: baseline;
-gap: 8px;
-position: relative;
+gap: 6px;
 }
 .amount-wrapper {
 position: relative;
@@ -294,10 +360,10 @@ display: inline-flex;
 align-items: center;
 }
 .balance-amount {
-font-size: 34px;
-font-weight: 700;
+font-size: 35px;
+font-weight: 750;
 line-height: 1;
-letter-spacing: -0.5px;
+letter-spacing: -0.4px;
 transition: opacity 0.2s ease;
 }
 .balance-amount.hidden-mode {
@@ -305,12 +371,15 @@ opacity: 0.8;
 letter-spacing: 2px;
 }
 .balance-currency {
-font-size: 15px;
-font-weight: 700;
-transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+font-size: 13px;
+font-weight: 800;
+letter-spacing: 0.2px;
+transform: translate(0, -2px);
+display: inline-block;
+transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .is-loading .balance-currency {
-transform: translateX(18px);
+transform: translate(24px, -2px);
 }
 .timestamp-wrapper {
 position: relative;
@@ -321,9 +390,8 @@ align-items: center;
 .balance-timestamp {
 font-size: 11px;
 font-weight: 600;
-color: rgba(255, 255, 255, 0.85);
-letter-spacing: 0.2px;
-transition: opacity 0.2s ease;
+color: rgba(255, 255, 255, 0.95);
+letter-spacing: 0.1px;
 }
 .skeleton {
 position: absolute;
@@ -337,16 +405,8 @@ opacity: 0;
 pointer-events: none;
 transition: opacity 0.2s ease;
 }
-.skeleton-amount {
-width: 100px;
-height: 32px;
-border-radius: 12px;
-}
-.skeleton-date {
-width: 140px;
-height: 14px;
-border-radius: 7px;
-}
+.skeleton-amount { width: 100px; height: 32px; border-radius: 12px; }
+.skeleton-date { width: 140px; height: 14px; border-radius: 7px; }
 .skeleton::after {
 content: "";
 position: absolute;
@@ -360,29 +420,22 @@ rgba(255, 255, 255, 0) 100%
 );
 animation: shimmer 1.2s infinite ease-in-out;
 }
-@keyframes shimmer {
-100% { transform: translateX(100%); }
-}
-.is-loading .balance-amount,
-.is-loading .balance-timestamp {
-opacity: 0 !important;
-}
-.is-loading .skeleton {
-opacity: 1 !important;
-}
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+.is-loading .balance-amount, .is-loading .balance-timestamp { opacity: 0 !important; }
+.is-loading .skeleton { opacity: 1 !important; }
+
 .balance-right-actions {
 display: flex;
 align-items: center;
-gap: 14px;
-margin-top: 4px;
+gap: 16px;
 }
 .action-svg-btn {
 background: none;
 border: none;
 padding: 0;
 cursor: pointer;
-width: 22px;
-height: 22px;
+width: 24px;
+height: 24px;
 display: flex;
 align-items: center;
 justify-content: center;
@@ -391,177 +444,312 @@ position: relative;
 .action-svg-btn svg {
 width: 100%;
 height: 100%;
-fill: #ffffff;
+fill: none;
+stroke: #ffffff;
+stroke-width: 2.2;
+stroke-linecap: round;
+stroke-linejoin: round;
 position: absolute;
 transition: transform 0.4s ease, opacity 0.2s ease;
 }
-.icon-spinner {
-opacity: 0;
-transform: rotate(0deg);
+.icon-spinner { opacity: 0; transform: rotate(0deg); }
+.action-svg-btn.is-refreshing .icon-refresh { opacity: 0; transform: rotate(180deg); }
+.action-svg-btn.is-refreshing .icon-spinner { opacity: 1; animation: spin 0.8s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* QR BOX */
+.balance-qr-card { 
+width: 66px; 
+background-color: #ffffff; 
+border-radius: 20px; 
+display: flex; 
+align-items: center; 
+justify-content: center; 
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03); 
 }
-.action-svg-btn.is-refreshing .icon-refresh {
-opacity: 0;
-transform: rotate(180deg);
-}
-.action-svg-btn.is-refreshing .icon-spinner {
-opacity: 1;
-animation: spin 0.8s linear infinite;
-}
-@keyframes spin {
-100% { transform: rotate(360deg); }
-}
-.balance-qr-card { width: 62px; background-color: #ffffff; border-radius: 22px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); }
-.balance-qr-card svg { width: 26px; height: 26px; fill: #007aff; }
-.phone-card { width: 106px; height: 90px; background: #ffffff; border-radius: 20px; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 18px; cursor: pointer; }
-.phone-icon { width: 34px; height: 34px; background: #eff6ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #007aff; margin-bottom: 6px; }
-.phone-text { font-size: 10px; font-weight: 700; color: #0f172a; line-height: 1.2; }
-.chart-card {
+.balance-qr-card svg { width: 30px; height: 30px; fill: none; stroke: #2b74f6; stroke-width: 2; }
+
+/* THE MAIN WHITE CARD CONTAINER */
+.main-white-card {
 background: #ffffff;
-border-radius: 20px;
-padding: 14px 16px;
-margin-bottom: 18px;
-box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-}
-.chart-header {
-font-size: 13px;
-font-weight: 800;
-color: #0f172a;
-margin-bottom: 12px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-.chart-bars {
-display: flex;
-justify-content: space-between;
-align-items: flex-end;
-height: 90px;
-padding-top: 10px;
-}
-.bar-item {
+border-radius: 28px;
+padding: 16px 14px 20px 14px;
+box-shadow: 0 2px 16px rgba(0,0,0,0.015);
 display: flex;
 flex-direction: column;
+gap: 16px;
+}
+
+/* DC (ПО НОМЕРУ ТЕЛЕФОНА) */
+.phone-card-container {
+display: flex;
+margin-bottom: 2px;
+}
+.phone-card { 
+width: 98px; 
+background: #ffffff; 
+border-radius: 20px; 
+padding: 12px 6px 10px 6px; 
+display: flex; 
+flex-direction: column; 
+align-items: center; 
+justify-content: center; 
+text-align: center; 
+box-shadow: 0 4px 14px rgba(0,0,0,0.04); 
+cursor: pointer; 
+border: 1px solid #f8fafc;
+}
+.phone-icon { 
+width: 52px; 
+height: 52px; 
+background: #f1f5f9; 
+border-radius: 50%; 
+display: flex; 
+align-items: center; 
+justify-content: center; 
+margin-bottom: 8px; 
+}
+.phone-icon svg { width: 38px; height: 38px; }
+.phone-text { 
+font-size: 11px; 
+font-weight: 800; 
+color: #0f172a; 
+line-height: 1.25; 
+letter-spacing: -0.2px; 
+}
+
+/* MINI APPS SECTION */
+.section-header { 
+display: flex; 
+justify-content: space-between; 
+align-items: center; 
+padding: 0 2px;
+}
+.section-title-box {
+display: flex;
 align-items: center;
 gap: 6px;
-cursor: pointer;
-flex: 1;
+font-size: 14px; 
+font-weight: 800; 
+color: #0f172a; 
 }
-.bar-column {
-width: 22px;
-background: #e2e8f0;
-border-radius: 6px;
+.section-title-box svg { width: 16px; height: 16px; fill: #2b74f6; }
+.see-all { font-size: 13px; color: #2b74f6; font-weight: 700; text-decoration: none; }
+
+.pills-container { 
+display: flex; 
+gap: 8px; 
+overflow-x: auto; 
+padding-bottom: 2px; 
 }
-.bar-item.active .bar-column {
-background: #007aff;
-}
-.bar-label {
-font-size: 10px;
-color: #94a3b8;
-font-weight: 700;
-}
-.bar-item.active .bar-label {
-color: #007aff;
-}
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-.section-title { font-size: 14px; font-weight: 800; color: #0f172a; }
-.see-all { font-size: 13px; color: #007aff; font-weight: 700; text-decoration: none; }
-.pills-container { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 2px; }
 .pills-container::-webkit-scrollbar { display: none; }
-.pill-item { background: #ffffff; border-radius: 22px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; white-space: nowrap; font-size: 13px; font-weight: 700; color: #0f172a; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
-.pill-badge { width: 26px; height: 26px; border-radius: 8px; background: #007aff; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
-.services-row { background: #ffffff; border-radius: 20px; padding: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 14px; }
-.service-item { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
-.service-item:not(:last-child) { border-right: 1px solid #f1f5f9; }
-.service-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
-.service-name { font-size: 12px; font-weight: 800; color: #0f172a; }
-.grid-2 { display: grid; grid-template-columns: 1.8fr 1fr; gap: 10px; margin-bottom: 10px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
-.card { background: #ffffff; padding: 12px; border-radius: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; min-height: 85px; }
-.card-title { font-size: 12px; font-weight: 800; color: #0f172a; }
-.card-sub { font-size: 10px; color: #94a3b8; font-weight: 600; margin-top: 2px; }
+
+.pill-item { 
+background: #ffffff; 
+border-radius: 22px; 
+padding: 5px 14px 5px 5px; 
+display: flex; 
+align-items: center; 
+gap: 8px; 
+white-space: nowrap; 
+font-size: 13px; 
+font-weight: 800; 
+color: #0f172a; 
+border: 1px solid #e2e8f0;
+box-shadow: 0 2px 6px rgba(0,0,0,0.02); 
+}
+.pill-badge { 
+width: 28px; 
+height: 28px; 
+border-radius: 50%; 
+display: flex; 
+align-items: center; 
+justify-content: center; 
+font-size: 10px; 
+font-weight: 900; 
+}
+
+.services-row { 
+background: #ffffff; 
+border-radius: 20px; 
+padding: 10px 12px; 
+display: flex; 
+justify-content: space-between; 
+align-items: center; 
+border: 1px solid #e2e8f0;
+box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+.service-item { 
+display: flex; 
+align-items: center; 
+gap: 8px; 
+flex: 1; 
+justify-content: center; 
+position: relative; 
+}
+.service-item:not(:last-child)::after { 
+content: ''; 
+position: absolute; 
+right: 0; 
+top: 15%; 
+height: 70%; 
+width: 1px; 
+background: #e2e8f0; 
+}
+.service-icon { 
+width: 32px; 
+height: 32px; 
+border-radius: 50%; 
+display: flex; 
+align-items: center; 
+justify-content: center; 
+color: white; 
+position: relative; 
+flex-shrink: 0;
+}
+.service-icon.parking::after { 
+content: ''; 
+position: absolute; 
+top: 0px; 
+right: 0px; 
+width: 8px; 
+height: 8px; 
+background: #ef4444; 
+border-radius: 50%; 
+border: 1.5px solid white; 
+}
+.service-name { font-size: 13px; font-weight: 800; color: #0f172a; }
+
+.grid-2 { display: grid; grid-template-columns: 1.8fr 1fr; gap: 10px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+/* WHITE CARDS FOR SERVICES (ОПЛАТА УСЛУГ И Т.Д.) */
+.card { 
+background: #ffffff; 
+padding: 14px 12px; 
+border-radius: 20px; 
+border: 1px solid #f1f5f9;
+box-shadow: 0 4px 16px rgba(0,0,0,0.035); 
+display: flex; 
+flex-direction: column; 
+justify-content: space-between; 
+min-height: 100px; 
+position: relative; 
+overflow: hidden; 
+}
+.card-title { font-size: 13.5px; font-weight: 750; color: #0f172a; z-index: 2; position: relative; line-height: 1.15; letter-spacing: -0.2px; }
+.card-sub { font-size: 10.5px; color: #64748b; font-weight: 700; margin-top: 3px; z-index: 2; position: relative; }
+
+/* INCREASED SIZE FOR 3D ICONS INSIDE CARDS */
 .card-img-placeholder {
-width: 28px;
-height: 28px;
-border-radius: 8px;
-align-self: flex-end;
+position: absolute;
+bottom: -2px;
+right: -2px;
+width: 68px;
+height: 68px;
 display: flex;
 align-items: center;
 justify-content: center;
+pointer-events: none;
 }
+.card-img-placeholder svg {
+width: 100%;
+height: 100%;
+}
+.grid-3 .card-img-placeholder { 
+width: 52px; 
+height: 52px; 
+bottom: -2px; 
+right: -2px; 
+}
+
+/* BOTTOM TAB NAVIGATION */
 .bottom-nav {
 position: fixed;
 bottom: 0;
 left: 0;
 right: 0;
-height: calc(68px + env(safe-area-inset-bottom));
-background: #ffffff;
+height: calc(64px + env(safe-area-inset-bottom));
+background: rgba(255, 255, 255, 0.95);
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
 display: flex;
 justify-content: space-around;
 align-items: center;
-border-top: 1px solid #e2e8f0;
+border-top: 1px solid rgba(226, 232, 240, 0.8);
 z-index: 100;
 width: 100%;
 padding-bottom: env(safe-area-inset-bottom);
+padding-left: 8px;
+padding-right: 8px;
 }
-.bottom-nav.hidden {
-display: none !important;
-}
-.nav-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: #94a3b8; font-weight: 700; flex: 1; background: none; border: none; cursor: pointer; }
-.nav-btn.active { color: #007aff; }
+.bottom-nav.hidden { display: none !important; }
 
-/* Размер и стили SVG-иконок нижнего меню */
+.nav-btn { 
+display: flex; 
+flex-direction: column; 
+align-items: center; 
+justify-content: center; 
+gap: 3px; 
+font-size: 10px; 
+color: #64748b; 
+font-weight: 700; 
+flex: 1; 
+background: none; 
+border: none; 
+cursor: pointer; 
+height: 100%; 
+transition: all 0.2s; 
+}
+
+.nav-btn.active { 
+background: #dbeafe; 
+color: #2b74f6; 
+border-radius: 20px; 
+height: 44px;
+padding: 0 14px;
+flex: initial;
+}
+
 .nav-btn svg {
 width: 22px;
 height: 22px;
-fill: none;
-stroke: currentColor;
-stroke-width: 2;
-stroke-linecap: round;
-stroke-linejoin: round;
+fill: currentColor;
+stroke: none;
 }
 
-.scanner-center { position: relative; top: -14px; flex: 1; display: flex; justify-content: center; }
-.scanner-circle { width: 52px; height: 52px; background: #007aff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35); }
-.scanner-circle svg { width: 26px; height: 26px; fill: none; stroke: #ffffff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.scanner-center { position: relative; top: -14px; flex: initial; display: flex; justify-content: center; margin: 0 6px; }
+.scanner-circle { 
+width: 52px; 
+height: 52px; 
+background: #2b74f6; 
+border-radius: 50%; 
+display: flex; 
+align-items: center; 
+justify-content: center; 
+color: white; 
+box-shadow: 0 6px 16px rgba(43, 116, 246, 0.35); 
+}
+.scanner-circle svg { width: 24px; height: 24px; fill: none; stroke: #ffffff; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
-#transfer-screen {
+/* TRANSFER & HISTORY SCREENS */
+#transfer-screen, #history-screen {
 background: #f4f6fa;
 min-height: 100vh;
-padding: 0 16px calc(100px + env(safe-area-inset-bottom)) 16px;
 }
+#transfer-screen { padding: 0 16px calc(100px + env(safe-area-inset-bottom)) 16px; }
+#history-screen { padding: 0 0 calc(80px + env(safe-area-inset-bottom)) 0; }
+
 .transfer-header-bg {
-background: #007aff;
+background: #2b74f6;
 margin: 0 -16px 14px -16px;
 padding: calc(14px + env(safe-area-inset-top)) 16px 12px 16px;
 border-radius: 0 0 20px 20px;
 }
-.transfer-header {
-display: flex;
-align-items: center;
-justify-content: space-between;
-}
-.transfer-back {
-background: none;
-border: none;
-cursor: pointer;
-font-size: 20px;
-color: #ffffff;
-font-weight: bold;
-display: flex;
-align-items: center;
-}
-.transfer-title {
-font-size: 16px;
-font-weight: 800;
-color: #ffffff;
-}
-.transfer-star {
-background: none;
-border: none;
-cursor: pointer;
-font-size: 22px;
-color: #ffffff;
-}
+.transfer-header { display: flex; align-items: center; justify-content: space-between; }
+.transfer-back { background: none; border: none; cursor: pointer; font-size: 20px; color: #ffffff; font-weight: bold; display: flex; align-items: center; }
+.transfer-title { font-size: 16px; font-weight: 750; color: #ffffff; }
+.transfer-star { background: none; border: none; cursor: pointer; font-size: 22px; color: #ffffff; }
 .transfer-input-box {
 background: #ffffff;
 border-radius: 14px;
@@ -579,687 +767,135 @@ position: relative;
 border: 2px solid transparent;
 transition: border-color 0.2s;
 }
-.input-wrapper-inner {
-display: flex;
-align-items: center;
-width: 100%;
-position: relative;
-overflow: hidden;
-}
-.transfer-input-box input {
-border: none;
-outline: none;
-font-size: 14px;
-width: 100%;
-background: transparent;
-color: #0f172a;
-font-weight: 600;
-pointer-events: none;
-text-align: left;
-}
-.transfer-input-box input::placeholder {
-color: #94a3b8;
-}
-.custom-caret {
-display: none;
-position: absolute;
-left: 16px;
-width: 2px;
-height: 18px;
-background-color: #007aff;
-animation: blink 1s infinite;
-pointer-events: none;
-}
-@keyframes blink {
-0%, 50% { opacity: 1; }
-51%, 100% { opacity: 0; }
-}
-.transfer-input-box.focused .custom-caret {
-display: block;
-}
-.transfer-input-icons {
-display: flex;
-gap: 12px;
-align-items: center;
-flex-shrink: 0;
-margin-left: 10px;
-}
-.transfer-input-icons svg {
-width: 20px;
-height: 20px;
-fill: #007aff;
-cursor: pointer;
-}
-.check-btn {
-width: 100%;
-background: #eef2ff;
-border: 1.5px solid rgba(0, 122, 255, 0.35);
-border-radius: 14px;
-padding: 15px;
-color: #007aff;
-font-size: 14px;
-font-weight: 800;
-cursor: pointer;
-margin-bottom: 10px;
-box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-}
-.min-sum {
-font-size: 12px;
-color: #94a3b8;
-font-weight: 700;
-text-align: right;
-margin-bottom: 12px;
-margin-right: 4px;
-}
-.single-card-wrapper {
-display: flex;
-justify-content: center;
-margin-bottom: 14px;
-}
-.single-account-card {
-background: #007aff;
-border-radius: 20px;
-padding: 14px 16px;
-color: white;
-width: 120px;
-height: 86px;
-box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-display: flex;
-flex-direction: column;
-justify-content: space-between;
-}
-.single-account-card .card-top {
-font-size: 10px;
-font-weight: 700;
-letter-spacing: 0.3px;
-color: rgba(255, 255, 255, 0.9);
-}
-.single-account-card .card-sum {
-font-size: 13px;
-font-weight: 800;
-}
-.transfer-notice {
-font-size: 12px;
-color: #64748b;
-line-height: 1.45;
-font-weight: 600;
-margin-bottom: 20px;
-width: 100%;
-}
-#history-screen {
-background: #f4f6fa;
-min-height: 100vh;
-padding: 0 0 calc(80px + env(safe-area-inset-bottom)) 0;
-}
-.history-tabs-header {
-display: flex;
-background: #ffffff;
-position: relative;
-border-bottom: 1px solid #e2e8f0;
-padding-top: env(safe-area-inset-top);
-}
-.history-tab {
-flex: 1;
-text-align: center;
-padding: 14px 0;
-font-size: 15px;
-font-weight: 700;
-color: #94a3b8;
-background: none;
-border: none;
-cursor: pointer;
-position: relative;
-}
-.history-tab.active {
-color: #0f172a;
-font-weight: 800;
-}
-.history-tab-indicator {
-position: absolute;
-bottom: 0;
-left: 0;
-width: 50%;
-height: 3px;
-background: #007aff;
-border-radius: 3px 3px 0 0;
-transition: transform 0.3s ease;
-}
-.history-screen-body {
-padding: 12px 16px;
-}
-.history-update-row {
-display: flex;
-align-items: center;
-justify-content: center;
-font-size: 12px;
-color: #64748b;
-font-weight: 600;
-margin-bottom: 12px;
-}
-.history-update-row-left {
-display: flex;
-align-items: center;
-gap: 6px;
-}
-.history-update-row svg {
-width: 14px;
-height: 14px;
-fill: #007aff;
-cursor: pointer;
-}
-.history-date-badge {
-display: inline-block;
-background: #e2e8f0;
-color: #475569;
-font-size: 12px;
-font-weight: 700;
-padding: 6px 14px;
-border-radius: 16px;
-margin-bottom: 12px;
-}
-.history-list {
-display: flex;
-flex-direction: column;
-gap: 10px;
-}
-.history-item {
-background: #ffffff;
-border-radius: 16px;
-padding: 14px 16px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-cursor: pointer;
-transition: transform 0.1s;
-}
-.history-item:active {
-transform: scale(0.98);
-}
-.history-left {
-display: flex;
-flex-direction: column;
-gap: 2px;
-}
-.history-card-num {
-font-size: 11px;
-color: #94a3b8;
-font-weight: 600;
-}
-.history-title {
-font-size: 14px;
-font-weight: 800;
-color: #0f172a;
-}
-.history-subtitle {
-font-size: 11px;
-color: #94a3b8;
-font-weight: 600;
-}
-.history-right {
-display: flex;
-flex-direction: column;
-align-items: flex-end;
-gap: 2px;
-}
-.history-sum-row {
-display: flex;
-align-items: center;
-gap: 4px;
-}
-.history-sum {
-font-size: 14px;
-font-weight: 800;
-color: #0f172a;
-}
-.history-check-icon {
-font-size: 12px;
-color: #10b981;
-}
-.history-check-icon.error-icon {
-color: #ef4444;
-font-weight: 900;
-}
-.history-time {
-font-size: 11px;
-font-weight: 600;
-color: #94a3b8;
-}
-.load-more-btn {
-width: 100%;
-background: #ff8c42;
-border: none;
-border-radius: 16px;
-padding: 15px;
-color: white;
-font-size: 15px;
-font-weight: 800;
-cursor: pointer;
-text-align: center;
-margin-top: 16px;
-box-shadow: 0 4px 14px rgba(255, 140, 66, 0.3);
-}
-.history-empty {
-text-align: center;
-color: #94a3b8;
-font-size: 14px;
-margin-top: 30px;
-font-weight: 600;
-}
-.history-tab-pane {
-display: none;
-}
-.history-tab-pane.active {
-display: block;
-}
-.confirmation-modal {
-position: fixed;
-top: 0; left: 0; right: 0; bottom: 0;
-background: rgba(0, 0, 0, 0.5);
-z-index: 2000;
-display: flex;
-align-items: flex-end;
-justify-content: center;
-opacity: 0;
-pointer-events: none;
-transition: opacity 0.3s ease;
-}
-.confirmation-modal.visible {
-opacity: 1;
-pointer-events: auto;
-}
-.modal-content {
-width: 100%;
-max-width: 100%;
-background: #ffffff;
-border-top-left-radius: 24px;
-border-top-right-radius: 24px;
-padding: 18px 20px calc(36px + env(safe-area-inset-bottom)) 20px;
-box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
-transform: translateY(100%);
-transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1);
-max-height: 90vh;
-overflow-y: auto;
-display: flex;
-flex-direction: column;
-justify-content: space-between;
-}
-.confirmation-modal.visible .modal-content {
-transform: translateY(0);
-}
-.modal-handle {
-width: 36px;
-height: 4px;
-background: #cbd5e1;
-border-radius: 2px;
-margin: 0 auto 16px auto;
-}
-.modal-subtitle {
-font-size: 13px;
-color: #94a3b8;
-font-weight: 700;
-margin-bottom: 4px;
-}
-.modal-sum-title {
-font-size: 26px;
-font-weight: 800;
-color: #007aff;
-margin-bottom: 24px;
-}
-.modal-details {
-display: flex;
-flex-direction: column;
-gap: 16px;
-margin-bottom: 24px;
-}
-.modal-row {
-display: flex;
-justify-content: space-between;
-align-items: center;
-font-size: 14px;
-}
-.modal-label {
-color: #64748b;
-font-weight: 600;
-}
-.modal-value {
-color: #0f172a;
-font-weight: 800;
-}
-.modal-confirm-btn {
-width: 100%;
-background: #007aff;
-border: none;
-border-radius: 16px;
-padding: 16px;
-color: white;
-font-size: 16px;
-font-weight: 800;
-cursor: pointer;
-text-align: center;
-box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
-}
+.input-wrapper-inner { display: flex; align-items: center; width: 100%; position: relative; overflow: hidden; }
+.transfer-input-box input { border: none; outline: none; font-size: 14px; width: 100%; background: transparent; color: #0f172a; font-weight: 600; pointer-events: none; text-align: left; }
+.transfer-input-box input::placeholder { color: #94a3b8; }
+.custom-caret { display: none; position: absolute; left: 16px; width: 2px; height: 18px; background-color: #2b74f6; animation: blink 1s infinite; pointer-events: none; }
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+.transfer-input-box.focused .custom-caret { display: block; }
+.transfer-input-icons { display: flex; gap: 12px; align-items: center; flex-shrink: 0; margin-left: 10px; }
+.transfer-input-icons svg { width: 20px; height: 20px; fill: #2b74f6; cursor: pointer; }
+.check-btn { width: 100%; background: #eef2ff; border: 1.5px solid rgba(43, 116, 246, 0.35); border-radius: 14px; padding: 15px; color: #2b74f6; font-size: 14px; font-weight: 750; cursor: pointer; margin-bottom: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+.min-sum { font-size: 12px; color: #94a3b8; font-weight: 700; text-align: right; margin-bottom: 12px; margin-right: 4px; }
+.single-card-wrapper { display: flex; justify-content: center; margin-bottom: 14px; }
+.single-account-card { background: #2b74f6; border-radius: 20px; padding: 14px 16px; color: white; width: 120px; height: 86px; box-shadow: 0 4px 12px rgba(43, 116, 246, 0.3); display: flex; flex-direction: column; justify-content: space-between; }
+.single-account-card .card-top { font-size: 10px; font-weight: 700; letter-spacing: 0.3px; color: rgba(255, 255, 255, 0.9); }
+.single-account-card .card-sum { font-size: 13px; font-weight: 750; }
+.transfer-notice { font-size: 12px; color: #64748b; line-height: 1.45; font-weight: 600; margin-bottom: 20px; width: 100%; }
 
-/* ДИЗАЙН ЧЕКА */
-.receipt-view {
-display: none;
-flex-direction: column;
-width: 100%;
-}
-.receipt-view.active {
-display: flex;
-}
-.bank-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding-bottom: 16px;
-}
-.bank-logo {
-display: flex;
-align-items: center;
-gap: 8px;
-}
-.logo-icon {
-width: 36px;
-height: 36px;
-background-color: #007aff;
-border-radius: 8px;
-display: flex;
-justify-content: center;
-align-items: center;
-color: white;
-font-weight: bold;
-font-size: 14px;
-}
-.logo-text {
-line-height: 1.05;
-}
-.logo-text .dushanbe {
-font-size: 14px;
-font-weight: 500;
-color: #165296;
-letter-spacing: 0.8px;
-}
-.logo-text .city-sub {
-font-size: 14px;
-font-weight: 500;
-color: #165296;
-letter-spacing: 0.8px;
-}
-.bank-info {
-text-align: right;
-}
-.bank-name {
-font-size: 13px;
-font-weight: 700;
-color: #7b7b80;
-}
-.bank-details {
-font-size: 11px;
-color: #7b7b80;
-font-weight: 700;
-margin-top: 2px;
-line-height: 1.3;
-}
-.divider {
-height: 1px;
-background-color: #e5e5ea;
-width: 100%;
-margin: 0 0 16px 0;
-}
-.receipt-details {
-display: flex;
-flex-direction: column;
-gap: 12px;
-margin-bottom: 20px;
-}
-.detail-row {
-display: flex;
-justify-content: space-between;
-align-items: center;
-}
-.detail-label {
-font-size: 14px;
-color: #7b7b80;
-font-weight: 700;
-}
-.detail-value {
-font-size: 14px;
-color: #1c1c1e;
-font-weight: 600;
-text-align: right;
-}
-.detail-value.success {
-color: #34c759;
-font-weight: 700;
-}
-.status-stamp-container {
-display: flex;
-justify-content: center;
-margin-bottom: 24px;
-}
-.status-badge-box {
-border: 1px solid #2da1ff;
-border-radius: 4px;
-padding: 6px 16px;
-text-align: center;
-background-color: #ffffff;
-display: inline-block;
-transition: all 0.2s ease;
-}
-.status-subtitle {
-font-size: 8px;
-color: #2da1ff;
-font-weight: 500;
-letter-spacing: 0.1px;
-margin-bottom: 2px;
-}
-.status-title {
-font-size: 13px;
-color: #2da1ff;
-font-weight: 700;
-letter-spacing: 0.3px;
-line-height: 1.1;
-text-transform: uppercase;
-}
-.error-badge-icon {
-display: none;
-width: 18px;
-height: 18px;
-border-radius: 50%;
-border: 1.5px solid #ef4444;
-color: #ef4444;
-font-size: 11px;
-font-weight: 900;
-align-items: center;
-justify-content: center;
-line-height: 1;
-margin-left: 6px;
-}
-.receipt-sum-container {
-display: inline-flex;
-align-items: center;
-justify-content: flex-end;
-}
-.receipt-sum-container.is-refunded .error-badge-icon {
-display: inline-flex;
-}
-.receipt-actions-row {
-display: grid;
-grid-template-columns: repeat(4, 1fr);
-gap: 8px;
-margin-bottom: 24px;
-}
-.receipt-action-item {
-display: flex;
-flex-direction: column;
-align-items: center;
-gap: 6px;
-background: none;
-border: none;
-cursor: pointer;
-}
-.receipt-action-icon {
-width: 50px;
-height: 50px;
-background-color: #f2f2f7;
-border-radius: 50%;
-display: flex;
-justify-content: center;
-align-items: center;
-color: #1c1c1e;
-font-size: 20px;
-}
-.receipt-action-label {
-font-size: 11px;
-color: #3a3a3c;
-font-weight: 500;
-}
+.history-tabs-header { display: flex; background: #ffffff; position: relative; border-bottom: 1px solid #e2e8f0; padding-top: env(safe-area-inset-top); }
+.history-tab { flex: 1; text-align: center; padding: 14px 0; font-size: 15px; font-weight: 700; color: #94a3b8; background: none; border: none; cursor: pointer; position: relative; }
+.history-tab.active { color: #0f172a; font-weight: 750; }
+.history-tab-indicator { position: absolute; bottom: 0; left: 0; width: 50%; height: 3px; background: #2b74f6; border-radius: 3px 3px 0 0; transition: transform 0.3s ease; }
+.history-screen-body { padding: 12px 16px; }
+.history-update-row { display: flex; align-items: center; justify-content: center; font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 12px; }
+.history-update-row-left { display: flex; align-items: center; gap: 6px; }
+.history-update-row svg { width: 14px; height: 14px; fill: #2b74f6; cursor: pointer; }
+.history-date-badge { display: inline-block; background: #e2e8f0; color: #475569; font-size: 12px; font-weight: 700; padding: 6px 14px; border-radius: 16px; margin-bottom: 12px; }
+.history-list { display: flex; flex-direction: column; gap: 10px; }
+.history-item { background: #ffffff; border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); cursor: pointer; transition: transform 0.1s; }
+.history-item:active { transform: scale(0.98); }
+.history-left { display: flex; flex-direction: column; gap: 2px; }
+.history-card-num { font-size: 11px; color: #94a3b8; font-weight: 600; }
+.history-title { font-size: 14px; font-weight: 750; color: #0f172a; }
+.history-subtitle { font-size: 11px; color: #94a3b8; font-weight: 600; }
+.history-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.history-sum-row { display: flex; align-items: center; gap: 4px; }
+.history-sum { font-size: 14px; font-weight: 750; color: #0f172a; }
+.history-check-icon { font-size: 12px; color: #10b981; }
+.history-check-icon.error-icon { color: #ef4444; font-weight: 900; }
+.history-time { font-size: 11px; font-weight: 600; color: #94a3b8; }
+.load-more-btn { width: 100%; background: #ff8c42; border: none; border-radius: 16px; padding: 15px; color: white; font-size: 15px; font-weight: 750; cursor: pointer; text-align: center; margin-top: 16px; box-shadow: 0 4px 14px rgba(255, 140, 66, 0.3); }
+.history-empty { text-align: center; color: #94a3b8; font-size: 14px; margin-top: 30px; font-weight: 600; }
+.history-tab-pane { display: none; }
+.history-tab-pane.active { display: block; }
 
-.status-view {
-display: none;
-flex-direction: column;
-align-items: center;
-text-align: center;
-flex: 1;
-justify-content: flex-start;
-padding-top: 10px;
-}
-.status-view.active {
-display: flex;
-}
-.status-icon-box {
-width: 64px;
-height: 64px;
-border-radius: 50%;
-display: flex;
-align-items: center;
-justify-content: center;
-margin: 0 auto 14px auto;
-}
-.status-icon-box.pending {
-background: #fff7ed;
-color: #f97316;
-border: 2px solid #ffedd5;
-}
-.status-icon-box.success {
-background: #ecfdf5;
-color: #10b981;
-border: 2px solid #d1fae5;
-}
-.status-title-pending {
-font-size: 20px;
-font-weight: 800;
-color: #f97316;
-margin-bottom: 24px;
-}
-.status-title-success {
-font-size: 20px;
-font-weight: 800;
-color: #007aff;
-margin-bottom: 24px;
-}
-.keyboard-container {
+#custom-toast {
 position: fixed;
-bottom: 0;
-left: 0;
-right: 0;
-width: 100%;
-background: #d1d5db;
-padding: 10px 10px calc(28px + env(safe-area-inset-bottom)) 10px;
-border-top-left-radius: 14px;
-border-top-right-radius: 14px;
-box-shadow: 0 -6px 25px rgba(0,0,0,0.18);
-z-index: 1000;
-display: none;
-}
-.keyboard-container.visible {
-display: block;
-}
-.keyboard-next-btn {
-width: 100%;
-background: #f97316;
-border: none;
-border-radius: 14px;
-padding: 16px;
+top: -100px;
+left: 50%;
+transform: translateX(-50%);
+background: #0f172a;
 color: white;
-font-size: 16px;
-font-weight: 800;
-cursor: pointer;
+padding: 12px 20px;
+border-radius: 12px;
+font-weight: 600;
+font-size: 13px;
+z-index: 10000;
+transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 text-align: center;
-margin-bottom: 10px;
-box-shadow: 0 3px 10px rgba(249, 115, 22, 0.35);
+max-width: 90%;
 }
-.ios-keyboard {
-display: flex;
-flex-direction: column;
-gap: 8px;
-}
-.kb-row {
-display: flex;
-gap: 8px;
-justify-content: center;
-}
-.kb-key {
-flex: 1;
-height: 52px;
-background: #ffffff;
-border-radius: 10px;
-display: flex;
-flex-direction: column;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-box-shadow: 0 1px 3px rgba(0,0,0,0.25);
-user-select: none;
-transition: background 0.1s;
-}
-.kb-key:active {
-background: #b0bec5;
-}
-.kb-num {
-font-size: 24px;
-font-weight: 400;
-color: #000000;
-line-height: 1;
-}
-.kb-sub {
-font-size: 10px;
-font-weight: 700;
-letter-spacing: 1.5px;
-color: #000000;
-margin-top: 3px;
-}
-.kb-key-action {
-background: #e2e8f0;
-}
-.default-next-container {
-position: fixed;
-bottom: calc(20px + env(safe-area-inset-bottom));
-left: 16px;
-right: 16px;
-z-index: 50;
-}
-.default-next-container.hidden {
-display: none;
-}
-.next-btn {
-width: 100%;
-background: #f97316;
-border: none;
-border-radius: 16px;
-padding: 16px;
-color: white;
-font-size: 16px;
-font-weight: 800;
-cursor: pointer;
-text-align: center;
-box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
-}
+#custom-toast.show { top: 30px; }
+
+.confirmation-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 2000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+.confirmation-modal.visible { opacity: 1; pointer-events: auto; }
+.modal-content { width: 100%; max-width: 100%; background: #ffffff; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 18px 20px calc(36px + env(safe-area-inset-bottom)) 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; justify-content: space-between; }
+.confirmation-modal.visible .modal-content { transform: translateY(0); }
+.modal-handle { width: 36px; height: 4px; background: #cbd5e1; border-radius: 2px; margin: 0 auto 16px auto; }
+.modal-subtitle { font-size: 13px; color: #94a3b8; font-weight: 700; margin-bottom: 4px; }
+.modal-sum-title { font-size: 26px; font-weight: 750; color: #2b74f6; margin-bottom: 24px; }
+.modal-details { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+.modal-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+.modal-label { color: #64748b; font-weight: 600; }
+.modal-value { color: #0f172a; font-weight: 750; }
+.modal-confirm-btn { width: 100%; background: #2b74f6; border: none; border-radius: 16px; padding: 16px; color: white; font-size: 16px; font-weight: 750; cursor: pointer; text-align: center; box-shadow: 0 4px 14px rgba(43, 116, 246, 0.3); }
+
+.receipt-view, .status-view { display: none; flex-direction: column; width: 100%; align-items: center; text-align: center; flex: 1; justify-content: flex-start; padding-top: 10px; }
+.receipt-view.active, .status-view.active { display: flex; }
+.bank-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; width: 100%; }
+.bank-logo { display: flex; align-items: center; gap: 8px; }
+.logo-icon { width: 36px; height: 36px; background-color: #2b74f6; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 14px; }
+.logo-text { line-height: 1.05; text-align: left; }
+.logo-text .dushanbe { font-size: 14px; font-weight: 500; color: #165296; letter-spacing: 0.8px; }
+.logo-text .city-sub { font-size: 14px; font-weight: 500; color: #165296; letter-spacing: 0.8px; }
+.bank-info { text-align: right; }
+.bank-name { font-size: 13px; font-weight: 700; color: #7b7b80; }
+.bank-details { font-size: 11px; color: #7b7b80; font-weight: 700; margin-top: 2px; line-height: 1.3; }
+.divider { height: 1px; background-color: #e5e5ea; width: 100%; margin: 0 0 16px 0; }
+.receipt-details { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; width: 100%; }
+.detail-row { display: flex; justify-content: space-between; align-items: center; }
+.detail-label { font-size: 14px; color: #7b7b80; font-weight: 700; }
+.detail-value { font-size: 14px; color: #1c1c1e; font-weight: 600; text-align: right; }
+.detail-value.success { color: #34c759; font-weight: 700; }
+.status-stamp-container { display: flex; justify-content: center; margin-bottom: 24px; width: 100%; }
+.status-badge-box { border: 1px solid #2da1ff; border-radius: 4px; padding: 6px 16px; text-align: center; background-color: #ffffff; display: inline-block; transition: all 0.2s ease; }
+.status-subtitle { font-size: 8px; color: #2da1ff; font-weight: 500; letter-spacing: 0.1px; margin-bottom: 2px; }
+.status-title { font-size: 13px; color: #2da1ff; font-weight: 700; letter-spacing: 0.3px; line-height: 1.1; text-transform: uppercase; }
+.error-badge-icon { display: none; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #ef4444; color: #ef4444; font-size: 11px; font-weight: 900; align-items: center; justify-content: center; line-height: 1; margin-left: 6px; }
+.receipt-sum-container { display: inline-flex; align-items: center; justify-content: flex-end; }
+.receipt-sum-container.is-refunded .error-badge-icon { display: inline-flex; }
+.receipt-actions-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 24px; width: 100%; }
+.receipt-action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; }
+.receipt-action-icon { width: 50px; height: 50px; background-color: #f2f2f7; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #1c1c1e; font-size: 20px; }
+.receipt-action-label { font-size: 11px; color: #3a3a3c; font-weight: 500; }
+
+.status-icon-box { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; }
+.status-icon-box.pending { background: #fff7ed; color: #f97316; border: 2px solid #ffedd5; }
+.status-icon-box.success { background: #ecfdf5; color: #10b981; border: 2px solid #d1fae5; }
+.status-title-pending { font-size: 20px; font-weight: 750; color: #f97316; margin-bottom: 24px; }
+.status-title-success { font-size: 20px; font-weight: 750; color: #2b74f6; margin-bottom: 24px; }
+
+.keyboard-container { position: fixed; bottom: 0; left: 0; right: 0; width: 100%; background: #d1d5db; padding: 10px 10px calc(28px + env(safe-area-inset-bottom)) 10px; border-top-left-radius: 14px; border-top-right-radius: 14px; box-shadow: 0 -6px 25px rgba(0,0,0,0.18); z-index: 1000; display: none; }
+.keyboard-container.visible { display: block; }
+.keyboard-next-btn { width: 100%; background: #f97316; border: none; border-radius: 14px; padding: 16px; color: white; font-size: 16px; font-weight: 750; cursor: pointer; text-align: center; margin-bottom: 10px; box-shadow: 0 3px 10px rgba(249, 115, 22, 0.35); }
+.ios-keyboard { display: flex; flex-direction: column; gap: 8px; }
+.kb-row { display: flex; gap: 8px; justify-content: center; }
+.kb-key { flex: 1; height: 52px; background: #ffffff; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.25); user-select: none; transition: background 0.1s; }
+.kb-key:active { background: #b0bec5; }
+.kb-num { font-size: 24px; font-weight: 400; color: #0f172a; line-height: 1; }
+.kb-sub { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #0f172a; margin-top: 3px; }
+.kb-key-action { background: #e2e8f0; }
+.default-next-container { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 16px; right: 16px; z-index: 50; }
+.default-next-container.hidden { display: none; }
+.next-btn { width: 100%; background: #f97316; border: none; border-radius: 16px; padding: 16px; color: white; font-size: 16px; font-weight: 750; cursor: pointer; text-align: center; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3); }
 </style>
 </head>
 <body>
+<div id="custom-toast"></div>
+
+<!-- LOCK SCREEN (PIN) -->
 <div id="lock-screen">
 <div class="lock-logo">DC</div>
 <div class="lock-title">Введите код доступа</div>
@@ -1286,7 +922,7 @@ box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 </div>
 </div>
 
-<!-- БОКОВОЕ МЕНЮ (САЙДБАР) -->
+<!-- SIDEBAR OVERLAY -->
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 <div class="sidebar" id="sidebar">
 <div class="sidebar-header">
@@ -1300,156 +936,318 @@ box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 </div>
 <div class="sidebar-menu">
 <div class="sidebar-item">
-<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-<span>Профиль</span>
+  <svg class="styled-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="24" height="24" rx="7" fill="#F0F2F5"/>
+    <path d="M12 4 L6 6.5 V11.5 C6 15 8.5 18.5 12 21 C15.5 18.5 18 15 18 11.5 V6.5 L12 4 Z" fill="#9bc2ff"/>
+    <path d="M12 15 C9 15 7 16.5 7 18.5 A1 1 0 0 0 8 19.5 H16 A1 1 0 0 0 17 18.5 C17 16.5 15 15 12 15 Z" fill="#0a6bff"/>
+    <circle cx="12" cy="11" r="3" fill="#0a6bff"/>
+    <path d="M9 10 V9 H10 M14 9 H15 V10 M9 12 V13 H10 M14 13 H15 V12" stroke="white" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M12 9.5 L13 11.5 L12 12.5 L11 11.5 Z" stroke="white" stroke-width="0.5" fill="none"/>
+    <circle cx="12" cy="11.5" r="0.5" fill="white"/>
+  </svg>
+  <span>Усиленная защита</span>
 </div>
+
 <div class="sidebar-item">
-<svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-<span>Мои карты</span>
+  <svg class="styled-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="24" height="24" rx="7" fill="#F0F2F5"/>
+    <path d="M16.5 14.2 C15.9 13.9 14.5 13.3 14 13.1 C13.5 12.9 13.2 12.8 12.9 13.3 C12.6 13.8 11.8 14.7 11.6 14.9 C11.4 15.1 11.1 15.2 10.6 14.9 C10.1 14.7 8.5 14.1 6.6 12.4 C5.1 11 4.2 9.4 3.9 8.9 C3.6 8.4 3.9 8.2 4.1 8 C4.3 7.8 4.6 7.5 4.8 7.2 C5 6.9 5.1 6.7 5.3 6.3 C5.5 5.9 5.4 5.6 5.2 5.2 C5 4.8 4.2 2.9 3.9 2.1 C3.6 1.4 3.3 1.5 3.1 1.5 C2.9 1.5 2.6 1.5 2.3 1.5 C2 1.5 1.5 1.6 1.2 2 C0.9 2.4 0 3.2 0 4.9 C0 6.6 1.2 8.2 1.4 8.5 C1.6 8.8 3.8 12.2 7.2 13.7 C10.6 15.2 11.3 14.9 12 14.9 C12.7 14.9 14.5 13.9 14.9 13.1 C15.3 12.3 15.3 12.3 15 12.1 C14.7 11.9 16.5 14.2 16.5 14.2 Z" fill="#0a6bff" transform="translate(3.7, 3.7) scale(0.7)"/>
+  </svg>
+  <span>Связь с банком</span>
 </div>
+
 <div class="sidebar-item">
-<svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
-<span>Безопасность</span>
+  <svg class="styled-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="24" height="24" rx="7" fill="#F0F2F5"/>
+    <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" fill="#0a6bff"/>
+    <path d="M12 7V6M12 18V17M17 12H18M6 12H7M15.5 15.5L16.2 16.2M7.8 7.8L8.5 8.5M15.5 8.5L16.2 7.8M7.8 16.2L8.5 15.5" stroke="#0a6bff" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+  <span>Параметры</span>
 </div>
-<div class="sidebar-divider"></div>
+
 <div class="sidebar-item">
-<svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
-<span>Помощь и поддержка</span>
+  <svg class="styled-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="24" height="24" rx="7" fill="#F0F2F5"/>
+    <path d="M9.5 9C9.5 7.6 10.6 6.5 12 6.5C13.4 6.5 14.5 7.6 14.5 9C14.5 10.1 13.7 11 12.5 11.4C12.1 11.5 12 11.8 12 12.3V13" stroke="#0a6bff" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="16" r="1" fill="#0a6bff"/>
+  </svg>
+  <span>Частые вопросы</span>
 </div>
+
 <div class="sidebar-item">
-<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-<span>О приложении</span>
+  <svg class="styled-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <rect width="24" height="24" rx="7" fill="#F0F2F5"/>
+    <path d="M5 12L19 5L12 19L10 14L5 12Z" fill="#0a6bff"/>
+    <path d="M10 14L15 9" stroke="#F0F2F5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span>Поделиться приложением</span>
+</div>
+
+<div style="display: flex; align-items: center; background: linear-gradient(135deg, #0a6bff 0%, #004ecc 100%); border-radius: 16px; padding: 12px 16px; margin: 8px 16px; color: white;">
+  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0; margin-right: 14px;">
+    <rect width="24" height="24" rx="7" fill="rgba(255, 255, 255, 0.2)"/>
+    <path d="M12 6L13.5 9.5H17.5L14.2 11.8L15.5 15.5L12 13.2L8.5 15.5L9.8 11.8L6.5 9.5H10.5L12 6Z" fill="white"/>
+  </svg>
+  <span style="font-weight: 600; font-size: 16px; color: white; flex-grow: 1;">DC Premium</span>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M9 18l6-6-6-6"/>
+  </svg>
 </div>
 </div>
 </div>
 
 <div class="app-container" id="app-container">
 <div id="main-screen" class="screen active">
+
+<!-- TOP NAV -->
 <div class="top-nav">
-<div class="top-nav-left" id="open-sidebar-btn"><svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg></div>
+<div class="top-nav-left" id="open-sidebar-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#2b74f6" stroke-width="2.5" stroke-linecap="round">
+        <path d="M4 7h16M4 12h12M4 17h8"/>
+    </svg>
+</div>
 <div class="top-nav-right">
-<svg id="bell-icon" style="cursor: pointer;" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-<svg viewBox="0 0 24 24"><path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.66 1.34 3 3 3h3v-8H5v-2c0-3.87 3.13-7 7-7s7 3.13 7 7v2h-4v8h3c1.66 0 3-1.34 3-3v-7c0-4.97-4.03-9-9-9z"/></svg>
-<svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+    <!-- Bell Icon -->
+    <svg id="bell-icon" style="cursor: pointer;" viewBox="0 0 24 24" fill="none" stroke="#2b74f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+    </svg>
+    <!-- Headset Icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="#2b74f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+    </svg>
+    <!-- Search Icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="#2b74f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
 </div>
 </div>
+
+<!-- BLUE BALANCE CARD -->
 <div class="balance-container">
-<div class="balance-blue-card">
-<div class="balance-left" id="balance-block">
-<div class="balance-amount-row">
-<div class="amount-wrapper">
-<span class="balance-amount" id="balance-val">152.09</span>
-<div class="skeleton skeleton-amount"></div>
+<div class="balance-blue-card" id="balance-block">
+    <div class="balance-top-row">
+        <div class="balance-amount-row">
+            <div class="amount-wrapper">
+                <span class="balance-amount" id="balance-val">40.09</span>
+                <div class="skeleton skeleton-amount"></div>
+            </div>
+            <span class="balance-currency">TJS</span>
+        </div>
+        <div class="balance-right-actions">
+            <!-- EYE ICON -->
+            <button class="action-svg-btn" id="toggle-visibility">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3.5"></circle>
+                </svg>
+            </button>
+            <!-- REFRESH ARROW ICON -->
+            <button class="action-svg-btn" id="refresh-balance">
+                <svg class="icon-refresh" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 4.5a7.5 7.5 0 0 0-7.5 7.5" />
+                    <polyline points="4.5 8 4.5 12 8.5 12" />
+                    <path d="M12 19.5a7.5 7.5 0 0 0 7.5-7.5" />
+                    <polyline points="19.5 16 19.5 12 15.5 12" />
+                </svg>
+                <svg class="icon-spinner" viewBox="0 0 24 24"><path fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" d="M12 4a8 8 0 0 1 8 8"/></svg>
+            </button>
+        </div>
+    </div>
+    <div class="timestamp-wrapper">
+        <span class="balance-timestamp" id="current-time-display">30.08.26 - 20:49:29</span>
+        <div class="skeleton skeleton-date"></div>
+    </div>
 </div>
-<span class="balance-currency">TJS</span>
-</div>
-<div class="timestamp-wrapper">
-<span class="balance-timestamp" id="current-time-display">27.08.26 - 12:09:00</span>
-<div class="skeleton skeleton-date"></div>
-</div>
-</div>
-<div class="balance-right-actions">
-<button class="action-svg-btn" id="toggle-visibility">
-<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-</button>
-<button class="action-svg-btn" id="refresh-balance">
-<svg class="icon-refresh" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-<svg class="icon-spinner" viewBox="0 0 24 24"><path fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" d="M12 4a8 8 0 0 1 8 8"/></svg>
-</button>
-</div>
-</div>
+
+<!-- QR BOX -->
 <div class="balance-qr-card">
-<svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-3 3h2v3h-2v-3zm3 3h3v3h-3v-3zm-3-3h2v-2h-2v2z"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="#2b74f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5"></rect>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"></rect>
+        <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"></rect>
+        <line x1="10" y1="6.5" x2="10" y2="6.51" stroke-width="3"></line>
+        <line x1="17.5" y1="6.5" x2="17.5" y2="6.51" stroke-width="3"></line>
+        <line x1="6.5" y1="17.5" x2="6.5" y2="17.51" stroke-width="3"></line>
+    </svg>
 </div>
 </div>
-<div class="phone-card" id="go-to-transfer">
-<div class="phone-icon">DC</div>
-<div class="phone-text">DC по номеру телефона</div>
-</div>
-<div class="chart-card">
-<div class="chart-header">
-<span>Статистика расходов</span>
-<span style="font-size: 11px; color: #94a3b8;">Нажмите на столбик</span>
-</div>
-<div class="chart-bars" id="interactive-bars">
-<div class="bar-item" data-index="0"><div class="bar-column" style="height: 40px;"></div><span class="bar-label">Пн</span></div>
-<div class="bar-item" data-index="1"><div class="bar-column" style="height: 65px;"></div><span class="bar-label">Вт</span></div>
-<div class="bar-item" data-index="2"><div class="bar-column" style="height: 50px;"></div><span class="bar-label">Ср</span></div>
-<div class="bar-item" data-index="3"><div class="bar-column" style="height: 80px;"></div><span class="bar-label">Чт</span></div>
-<div class="bar-item" data-index="4"><div class="bar-column" style="height: 55px;"></div><span class="bar-label">Пт</span></div>
-<div class="bar-item" data-index="5"><div class="bar-column" style="height: 30px;"></div><span class="bar-label">Сб</span></div>
-<div class="bar-item" data-index="6"><div class="bar-column" style="height: 45px;"></div><span class="bar-label">Вс</span></div>
-</div>
-</div>
-<div class="section-header">
-<span class="section-title">Мини приложения</span>
-<a href="#" class="see-all">Все ></a>
-</div>
-<div class="pills-container">
-<div class="pill-item"><div class="pill-badge">DC</div><span>DC business</span></div>
-<div class="pill-item"><div class="pill-badge" style="background:#10b981;">СБП</div><span>Перевод из РФ</span></div>
-<div class="pill-item"><div class="pill-badge" style="background:#6366f1;">VISA</div><span>Visa card</span></div>
-</div>
-<div class="services-row">
-<div class="service-item"><div class="service-icon" style="background: #10b981;">⚡</div><span class="service-name">Neru</span></div>
-<div class="service-item"><div class="service-icon" style="background: #007aff;">🅿️</div><span class="service-name">Parking</span></div>
-<div class="service-item"><div class="service-icon" style="background: #f97316;">🦅</div><span class="service-name">Шохин</span></div>
-</div>
-<div class="grid-2">
-<div class="card">
-<div><div class="card-title">Оплата услуг</div><div class="card-sub">Мобильная связь</div></div>
-<div class="card-img-placeholder" style="background:#eff6ff;">
-<svg viewBox="0 0 24 24" fill="#007aff" width="16" height="16"><path d="M17 1H7c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 18H7V5h10v14z"/></svg>
-</div>
-</div>
-<div class="card">
-<div class="card-title">Карты</div>
-<div class="card-img-placeholder" style="background:#ecfdf5;">
-<svg viewBox="0 0 24 24" fill="#10b981" width="16" height="16"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-</div>
-</div>
-</div>
-<div class="grid-3">
-<div class="card">
-<div class="card-title">Кредиты</div>
-<div class="card-img-placeholder" style="background:#fef2f2;">
-<svg viewBox="0 0 24 24" fill="#e11d48" width="16" height="16"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
-</div>
-</div>
-<div class="card">
-<div class="card-title">Депозиты</div>
-<div class="card-img-placeholder" style="background:#fff7ed;">
-<svg viewBox="0 0 24 24" fill="#ea580c" width="16" height="16"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-</div>
-</div>
-<div class="card">
-<div class="card-title">Мои дома</div>
-<div class="card-img-placeholder" style="background:#f5f3ff;">
-<svg viewBox="0 0 24 24" fill="#8b5cf6" width="16" height="16"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-</div>
-</div>
-</div>
-<div class="grid-3">
-<div class="card">
-<div class="card-title">Документы</div>
-<div class="card-img-placeholder" style="background:#f0fdfa;">
-<svg viewBox="0 0 24 24" fill="#0d9488" width="16" height="16"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-</div>
-</div>
-<div class="card">
-<div class="card-title">CityCard</div>
-<div class="card-img-placeholder" style="background:#eff6ff;">
-<svg viewBox="0 0 24 24" fill="#2563eb" width="16" height="16"><path d="M12 2c-4.42 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h2.23l2-2H14l2 2h2.23v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zm0 5.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM7.5 16c-.83 0-1.5-.67-1.5-1.5S6.67 13 7.5 13s1.5.67 1.5 1.5S8.33 16 7.5 16zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
-</div>
-</div>
-<div class="card">
-<div class="card-title">Новости</div>
-<div class="card-img-placeholder" style="background:#fdf4ff;">
-<svg viewBox="0 0 24 24" fill="#9333ea" width="16" height="16"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-</div>
-</div>
-</div>
-</div>
+
+<!-- THE MAIN WHITE CARD CONTAINER -->
+<div class="main-white-card">
+
+    <!-- DC (ПО НОМЕРУ ТЕЛЕФОНА) -->
+    <div class="phone-card-container">
+        <div class="phone-card" id="go-to-transfer">
+            <div class="phone-icon">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="48" fill="#F1F5F9"/>
+                    <path d="M22 34 H36 C47 34 51 40 51 49 C51 58 47 64 36 64 H22 V34 Z" fill="#1d4ed8"/>
+                    <path d="M30 42 H35 C39 42 42 45 42 49 C42 53 39 56 35 56 H30 V42 Z" fill="#F1F5F9"/>
+                    <path d="M20 64 C28 64 45 64 51 53 C46 59 36 59 28 59 H20 V64 Z" fill="#d97706"/>
+                    <path d="M52 38 C58 32 68 32 74 38 L68 43 C64 39 58 39 55 43 C52 47 52 51 55 55 C58 59 64 59 68 55 L74 60 C68 66 58 66 52 60 C46 54 46 44 52 38 Z" fill="#1d4ed8"/>
+                    <path d="M53 38 C60 32 70 34 76 38" stroke="#d97706" stroke-width="4" stroke-linecap="round"/>
+                    <text x="73" y="46" font-family="Arial, sans-serif" font-weight="900" font-size="9" fill="#1d4ed8">CITY</text>
+                    <text x="52" y="60" font-family="Arial, sans-serif" font-weight="800" font-size="7" fill="#1d4ed8" letter-spacing="0.5">DUSHANBE</text>
+                </svg>
+            </div>
+            <div class="phone-text">DC (по номеру<br>телефона)</div>
+        </div>
+    </div>
+
+    <!-- MINI APPS TITLE -->
+    <div class="section-header">
+        <div class="section-title-box">
+            <svg viewBox="0 0 24 24"><path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/></svg>
+            <span>Мини приложения</span>
+        </div>
+        <a href="#" class="see-all">Все ></a>
+    </div>
+
+    <!-- COMPACT MINI APP PILLS -->
+    <div class="pills-container">
+        <div class="pill-item">
+            <div class="pill-badge" style="background:#1e3a8a; color:white;">DC</div>
+            <span>DC business</span>
+        </div>
+        <div class="pill-item">
+            <div class="pill-badge" style="background:transparent;">
+                <svg viewBox="0 0 32 32" fill="none" width="22" height="22">
+                    <path d="M16 2L30 26H2L16 2Z" fill="#10b981"/>
+                    <path d="M16 10L24 24H8L16 10Z" fill="#3b82f6"/>
+                    <path d="M16 16L20 22H12L16 16Z" fill="#f59e0b"/>
+                </svg>
+            </div>
+            <span>Перевод из РФ</span>
+        </div>
+        <div class="pill-item">
+            <div class="pill-badge" style="background:#e0e7ff; color:#1d4ed8; font-size:9px;">VISA</div>
+            <span>Visa card</span>
+        </div>
+    </div>
+
+    <!-- COMPACT SERVICES ROW -->
+    <div class="services-row">
+        <div class="service-item">
+            <div class="service-icon" style="background: #4ade80;">
+                <svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M17 8C8 10 5.5 16 5 21c0 0 2-3.5 6.5-5 0 0-2 2-2 4 4.5-2.5 8-8 7.5-12z"/></svg>
+            </div>
+            <span class="service-name">Neru</span>
+        </div>
+        <div class="service-item">
+            <div class="service-icon parking" style="background: #2b74f6;">
+                <span style="font-weight: 850; font-size: 11px;">P</span>
+            </div>
+            <span class="service-name">Parking</span>
+        </div>
+        <div class="service-item">
+            <div class="service-icon" style="background: #ea580c;">
+                <svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M12 2l4 8h-3v12h-2V10H8l4-8z"/></svg>
+            </div>
+            <span class="service-name">Шохин</span>
+        </div>
+    </div>
+
+    <!-- MAIN CARDS GRID 2 -->
+    <div class="grid-2">
+        <div class="card">
+            <div>
+                <div class="card-title">Оплата услуг</div>
+                <div class="card-sub">Мобильная связь</div>
+            </div>
+            <div class="card-img-placeholder">
+                <svg viewBox="0 0 60 60">
+                    <rect x="8" y="12" width="44" height="36" rx="14" fill="#dbeafe" opacity="0.8"/>
+                    <rect x="14" y="18" width="32" height="32" rx="10" fill="#a5b4fc"/>
+                </svg>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">Карты</div>
+            <div class="card-img-placeholder">
+                <svg viewBox="0 0 60 60">
+                    <rect x="6" y="14" width="48" height="32" rx="10" fill="#facc15"/>
+                    <line x1="14" y1="34" x2="26" y2="34" stroke="#ca8a04" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CARDS GRID 3 -->
+    <div class="grid-3">
+        <div class="card">
+            <div class="card-title">Кредиты</div>
+            <div class="card-img-placeholder">
+                <svg viewBox="0 0 50 50">
+                    <rect x="6" y="12" width="38" height="28" rx="11" fill="#fbcfe8"/>
+                    <path d="M25 21a5 5 0 100 10 5 5 0 000-10z" fill="#f43f5e"/>
+                    <path d="M22 26l2 2 4-4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">Депозиты</div>
+            <div class="card-img-placeholder">
+                <svg viewBox="0 0 50 50">
+                    <rect x="4" y="10" width="22" height="30" rx="8" fill="#d9f99d"/>
+                    <rect x="18" y="8" width="26" height="32" rx="9" fill="#84cc16"/>
+                    <text x="23" y="28" font-size="12" font-weight="bold" fill="#ffffff">1+1</text>
+                </svg>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">Мои дома</div>
+            <div class="card-img-placeholder">
+                <svg viewBox="0 0 50 50">
+                    <path d="M25 8l17 15h-4v20H12V23H8z" fill="#2563eb"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CARDS GRID 3 -->
+    <div class="grid-3">
+        <div class="card">
+            <div class="card-title">Документы</div>
+            <div class="card-img-placeholder">
+                <svg viewBox="0 0 50 50">
+                    <rect x="8" y="6" width="34" height="38" rx="9" fill="#94a3b8"/>
+                    <line x1="16" y1="20" x2="34" y2="20" stroke="#475569" stroke-width="3.5" stroke-linecap="round"/>
+                    <line x1="16" y1="29" x2="34" y2="29" stroke="#475569" stroke-width="3.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">CityCard</div>
+            <div class="card-img-placeholder">
+                <svg viewBox="0 0 50 50">
+                    <circle cx="25" cy="25" r="20" stroke="#1d4ed8" stroke-width="3.5" fill="none"/>
+                    <path d="M25 11l-5 18h10z" fill="#1d4ed8"/>
+                    <text x="29" y="28" font-size="9" font-weight="bold" fill="#1d4ed8">ity</text>
+                    <text x="29" y="36" font-size="9" font-weight="bold" fill="#1d4ed8">ard</text>
+                </svg>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">Новости</div>
+            <div class="card-img-placeholder">
+                <svg viewBox="0 0 50 50">
+                    <path d="M10 6h30v36l-15-10-15 10V6z" fill="#cbd5e1"/>
+                    <line x1="18" y1="18" x2="32" y2="18" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="18" y1="25" x2="28" y2="25" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+</div> <!-- END MAIN WHITE CARD -->
+
+</div> <!-- END MAIN SCREEN -->
+
+<!-- TRANSFER SCREEN -->
 <div id="transfer-screen" class="screen">
 <div class="transfer-header-bg">
 <div class="transfer-header">
@@ -1487,7 +1285,7 @@ box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 <div class="single-card-wrapper">
 <div class="single-account-card">
 <div class="card-top">VISA****6631</div>
-<div class="card-sum" id="transfer-card-sum">152.09 TJS</div>
+<div class="card-sum" id="transfer-card-sum">40.09 TJS</div>
 </div>
 </div>
 <div class="transfer-notice">
@@ -1497,6 +1295,8 @@ box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 <button class="next-btn" id="main-action-btn">Далее</button>
 </div>
 </div>
+
+<!-- HISTORY SCREEN -->
 <div id="history-screen" class="screen">
 <div class="history-tabs-header">
 <button class="history-tab active" id="tab-operations">Операции</button>
@@ -1507,7 +1307,7 @@ box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 <div class="history-screen-body">
 <div class="history-update-row">
 <div class="history-update-row-left">
-<span>Обновлено: <span id="history-update-time">27.08.26 - 12:41</span></span>
+<span>Обновлено: <span id="history-update-time">30.08.26 - 20:49</span></span>
 <svg viewBox="0 0 24 24" id="history-refresh-btn"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
 </div>
 </div>
@@ -1524,44 +1324,59 @@ box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 <div class="history-screen-body">
 <div class="history-update-row">
 <div class="history-update-row-left">
-<span>Обновлено: <span id="statement-update-time">27.08.26 - 12:41</span></span>
+<span>Обновлено: <span id="statement-update-time">30.08.26 - 20:49</span></span>
 <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
 </div>
 </div>
 </div>
 </div>
 </div>
+
+<!-- BOTTOM NAV -->
 <div class="bottom-nav" id="bottom-nav">
 <button class="nav-btn active" id="nav-main">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-<span>Главная</span>
+    <svg viewBox="0 0 24 24">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+    </svg>
+    <span>Главная</span>
 </button>
 <button class="nav-btn" id="nav-transfers">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-<span>Переводы</span>
+    <svg viewBox="0 0 24 24">
+        <path d="M16 6l4 4-4 4M20 10H4M8 18l-4-4 4-4M4 14h16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <span>Переводы</span>
 </button>
 <div class="scanner-center">
-<div class="scanner-circle">
-<svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2"></path><path d="M17 3h2a2 2 0 0 1 2 2v2"></path><path d="M21 17v2a2 2 0 0 1-2 2h-2"></path><path d="M7 21H5a2 2 0 0 1-2-2v-2"></path><line x1="7" y1="12" x2="17" y2="12"></line></svg>
-</div>
+    <div class="scanner-circle">
+        <svg viewBox="0 0 24 24">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+            <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+            <line x1="7" y1="12" x2="17" y2="12"></line>
+        </svg>
+    </div>
 </div>
 <button class="nav-btn">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-<span>MiniApps</span>
+    <svg viewBox="0 0 24 24">
+        <rect x="4" y="4" width="6" height="6" rx="1.5"></rect>
+        <rect x="14" y="4" width="6" height="6" rx="1.5"></rect>
+        <rect x="14" y="14" width="6" height="6" rx="1.5"></rect>
+        <rect x="4" y="14" width="6" height="6" rx="1.5"></rect>
+    </svg>
+    <span>MiniApps</span>
 </button>
-<!-- Внедренная точная иконка Истории -->
 <button class="nav-btn" id="nav-history">
-<svg viewBox="0 0 24 24">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-    <polyline points="14 2 14 8 20 8"></polyline>
-    <line x1="16" y1="13" x2="8" y2="13"></line>
-    <line x1="16" y1="17" x2="8" y2="17"></line>
-    <polyline points="10 9 9 9 8 9"></polyline>
-</svg>
-<span>История</span>
+    <svg viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+        <polyline points="12 7 12 12 15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </svg>
+    <span>История</span>
 </button>
 </div>
 </div>
+
+<!-- MODAL CONFIRMATION -->
 <div class="confirmation-modal" id="confirmation-modal">
 <div class="modal-content">
 <div class="status-view active" id="view-confirm">
@@ -1570,30 +1385,12 @@ box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 <div class="modal-subtitle">Подтверждение платежа</div>
 <div class="modal-sum-title" id="modal-sum-display">0.00 TJS</div>
 <div class="modal-details">
-<div class="modal-row">
-<span class="modal-label">Поставщик:</span>
-<span class="modal-value">DC (по номеру телефона)</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Номер/Счет:</span>
-<span class="modal-value" id="modal-phone-display">-</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Способ оплаты:</span>
-<span class="modal-value">4713 **** **** 6631</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Сумма зачисления:</span>
-<span class="modal-value" id="modal-zaryad-display">0.00 TJS</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Комиссия:</span>
-<span class="modal-value">0.00 TJS</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Сумма списания:</span>
-<span class="modal-value" id="modal-spisanie-display">0.00 TJS</span>
-</div>
+<div class="modal-row"><span class="modal-label">Поставщик:</span><span class="modal-value">DC (по номеру телефона)</span></div>
+<div class="modal-row"><span class="modal-label">Номер/Счет:</span><span class="modal-value" id="modal-phone-display">-</span></div>
+<div class="modal-row"><span class="modal-label">Способ оплаты:</span><span class="modal-value">4713 **** **** 6631</span></div>
+<div class="modal-row"><span class="modal-label">Сумма зачисления:</span><span class="modal-value" id="modal-zaryad-display">0.00 TJS</span></div>
+<div class="modal-row"><span class="modal-label">Комиссия:</span><span class="modal-value">0.00 TJS</span></div>
+<div class="modal-row"><span class="modal-label">Сумма списания:</span><span class="modal-value" id="modal-spisanie-display">0.00 TJS</span></div>
 </div>
 </div>
 <button class="modal-confirm-btn" id="modal-final-btn">Подтверждаю</button>
@@ -1606,30 +1403,12 @@ box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 </div>
 <div class="status-title-pending">Выполняется</div>
 <div class="modal-details" style="text-align: left;">
-<div class="modal-row">
-<span class="modal-label">Поставщик:</span>
-<span class="modal-value">DC (по номеру телефона)</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Получатель:</span>
-<span class="modal-value" id="pending-phone">-</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">К зачислению:</span>
-<span class="modal-value" id="pending-sum">-</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Комиссия:</span>
-<span class="modal-value">0.00</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Дата:</span>
-<span class="modal-value" id="pending-date">-</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Время:</span>
-<span class="modal-value" id="pending-time">-</span>
-</div>
+<div class="modal-row"><span class="modal-label">Поставщик:</span><span class="modal-value">DC (по номеру телефона)</span></div>
+<div class="modal-row"><span class="modal-label">Получатель:</span><span class="modal-value" id="pending-phone">-</span></div>
+<div class="modal-row"><span class="modal-label">К зачислению:</span><span class="modal-value" id="pending-sum">-</span></div>
+<div class="modal-row"><span class="modal-label">Комиссия:</span><span class="modal-value">0.00</span></div>
+<div class="modal-row"><span class="modal-label">Дата:</span><span class="modal-value" id="pending-date">-</span></div>
+<div class="modal-row"><span class="modal-label">Время:</span><span class="modal-value" id="pending-time">-</span></div>
 </div>
 </div>
 <div></div>
@@ -1642,30 +1421,12 @@ box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 </div>
 <div class="status-title-success">Платеж выполнен</div>
 <div class="modal-details" style="text-align: left;">
-<div class="modal-row">
-<span class="modal-label">Поставщик:</span>
-<span class="modal-value">DC (по номеру телефона)</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Получатель:</span>
-<span class="modal-value" id="success-phone">-</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">К зачислению:</span>
-<span class="modal-value" id="success-sum">-</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Комиссия:</span>
-<span class="modal-value">0.00</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Дата:</span>
-<span class="modal-value" id="success-date">-</span>
-</div>
-<div class="modal-row">
-<span class="modal-label">Время:</span>
-<span class="modal-value" id="success-time">-</span>
-</div>
+<div class="modal-row"><span class="modal-label">Поставщик:</span><span class="modal-value">DC (по номеру телефона)</span></div>
+<div class="modal-row"><span class="modal-label">Получатель:</span><span class="modal-value" id="success-phone">-</span></div>
+<div class="modal-row"><span class="modal-label">К зачислению:</span><span class="modal-value" id="success-sum">-</span></div>
+<div class="modal-row"><span class="modal-label">Комиссия:</span><span class="modal-value">0.00</span></div>
+<div class="modal-row"><span class="modal-label">Дата:</span><span class="modal-value" id="success-date">-</span></div>
+<div class="modal-row"><span class="modal-label">Время:</span><span class="modal-value" id="success-time">-</span></div>
 </div>
 </div>
 <button class="modal-confirm-btn" id="modal-main-menu-btn">Главное меню</button>
@@ -1674,129 +1435,68 @@ box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
 <div>
 <div class="modal-handle"></div>
 <div class="bank-header">
-<div class="bank-logo">
-<div class="logo-icon">DC</div>
-<div class="logo-text">
-<div class="dushanbe">DUSHANBE</div>
-<div class="city-sub">CITY</div>
-</div>
-</div>
-<div class="bank-info">
-<div class="bank-name">ЗАО "Душанбе Сити Банк"</div>
-<div class="bank-details">ИНН: 510022404<br>Таджикистан, г. Душанбе</div>
-</div>
+<div class="bank-logo"><div class="logo-icon">DC</div><div class="logo-text"><div class="dushanbe">DUSHANBE</div><div class="city-sub">CITY</div></div></div>
+<div class="bank-info"><div class="bank-name">ЗАО "Душанбе Сити Банк"</div><div class="bank-details">ИНН: 510022404<br>Таджикистан, г. Душанбе</div></div>
 </div>
 <div class="divider"></div>
 <div class="receipt-details">
-<div class="detail-row">
-<span class="detail-label">Дата операции:</span>
-<span class="detail-value" id="receipt-date">-</span>
-</div>
-<div class="detail-row">
-<span class="detail-label">Время операции:</span>
-<span class="detail-value" id="receipt-time">-</span>
-</div>
-<div class="detail-row">
-<span class="detail-label">Номер операции:</span>
-<span class="detail-value" id="receipt-op-num">-</span>
-</div>
-<div class="detail-row">
-<span class="detail-label">Поставщик:</span>
-<span class="detail-value">DC (по номеру телефона)</span>
-</div>
-<div class="detail-row">
-<span class="detail-label">Счет отправителя:</span>
-<span class="detail-value">4713***6631</span>
-</div>
-<div class="detail-row">
-<span class="detail-label">Счет получателя:</span>
-<span class="detail-value" id="receipt-receiver">-</span>
-</div>
-<div class="detail-row">
-<span class="detail-label">Сумма операции:</span>
-<div class="receipt-sum-container" id="receipt-sum-container">
-<span class="detail-value" id="receipt-sum">-</span>
-<span class="error-badge-icon">!</span>
-</div>
-</div>
-<div class="detail-row">
-<span class="detail-label">Комиссия:</span>
-<span class="detail-value">0.00</span>
-</div>
-<div class="detail-row">
-<span class="detail-label">Статус:</span>
-<span class="detail-value success" id="receipt-status-text">Успешный</span>
-</div>
+<div class="detail-row"><span class="detail-label">Дата операции:</span><span class="detail-value" id="receipt-date">-</span></div>
+<div class="detail-row"><span class="detail-label">Время операции:</span><span class="detail-value" id="receipt-time">-</span></div>
+<div class="detail-row"><span class="detail-label">Номер операции:</span><span class="detail-value" id="receipt-op-num">-</span></div>
+<div class="detail-row"><span class="detail-label">Поставщик:</span><span class="detail-value">DC (по номеру телефона)</span></div>
+<div class="detail-row"><span class="detail-label">Счет отправителя:</span><span class="detail-value">4713***6631</span></div>
+<div class="detail-row"><span class="detail-label">Счет получателя:</span><span class="detail-value" id="receipt-receiver">-</span></div>
+<div class="detail-row"><span class="detail-label">Сумма операции:</span><div class="receipt-sum-container" id="receipt-sum-container"><span class="detail-value" id="receipt-sum">-</span><span class="error-badge-icon">!</span></div></div>
+<div class="detail-row"><span class="detail-label">Комиссия:</span><span class="detail-value">0.00</span></div>
+<div class="detail-row"><span class="detail-label">Статус:</span><span class="detail-value success" id="receipt-status-text">Успешный</span></div>
 </div>
 <div class="divider" style="margin-bottom: 16px;"></div>
 <div class="status-stamp-container">
 <div class="status-badge-box" id="receipt-badge-box">
 <div class="status-subtitle">ЗАО «Душанбе Сити Банк»</div>
-<div class="status-title" id="receipt-badge-status">
-ОПЕРАЦИЯ<br>ВЫПОЛНЕНА
-</div>
+<div class="status-title" id="receipt-badge-status">ОПЕРАЦИЯ<br>ВЫПОЛНЕНА</div>
 </div>
 </div>
 <div class="receipt-actions-row">
 <button class="receipt-action-item" id="btn-share-receipt">
-<div class="receipt-action-icon">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
-</div>
-<span class="receipt-action-label">Поделиться</span>
+<div class="receipt-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></div><span class="receipt-action-label">Поделиться</span>
 </button>
 <button class="receipt-action-item">
-<div class="receipt-action-icon">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-</div>
-<span class="receipt-action-label">Сохранить</span>
+<div class="receipt-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></div><span class="receipt-action-label">Сохранить</span>
 </button>
 <button class="receipt-action-item">
-<div class="receipt-action-icon">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-</div>
-<span class="receipt-action-label">В избранные</span>
+<div class="receipt-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div><span class="receipt-action-label">В избранные</span>
 </button>
 <button class="receipt-action-item">
-<div class="receipt-action-icon">
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
-</div>
-<span class="receipt-action-label">Повторить</span>
+<div class="receipt-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></div><span class="receipt-action-label">Повторить</span>
 </button>
 </div>
 </div>
-<button class="modal-confirm-btn" id="receipt-close-btn" style="background: #007aff;">Закрыть</button>
+<button class="modal-confirm-btn" id="receipt-close-btn" style="background: #2b74f6;">Закрыть</button>
 </div>
 </div>
 </div>
+
+<!-- KEYBOARD -->
 <div class="keyboard-container" id="custom-keyboard">
 <button class="keyboard-next-btn" id="kb-action-btn">Далее</button>
 <div class="ios-keyboard">
-<div class="kb-row">
-<div class="kb-key" data-val="1"><span class="kb-num">1</span></div>
-<div class="kb-key" data-val="2"><span class="kb-num">2</span><span class="kb-sub">ABC</span></div>
-<div class="kb-key" data-val="3"><span class="kb-num">3</span><span class="kb-sub">DEF</span></div>
-</div>
-<div class="kb-row">
-<div class="kb-key" data-val="4"><span class="kb-num">4</span><span class="kb-sub">GHI</span></div>
-<div class="kb-key" data-val="5"><span class="kb-num">5</span><span class="kb-sub">JKL</span></div>
-<div class="kb-key" data-val="6"><span class="kb-num">6</span><span class="kb-sub">MNO</span></div>
-</div>
-<div class="kb-row">
-<div class="kb-key" data-val="7"><span class="kb-num">7</span><span class="kb-sub">PQRS</span></div>
-<div class="kb-key" data-val="8"><span class="kb-num">8</span><span class="kb-sub">TUV</span></div>
-<div class="kb-key" data-val="9"><span class="kb-num">9</span><span class="kb-sub">WXYZ</span></div>
-</div>
-<div class="kb-row">
-<div class="kb-key kb-key-action" data-val=","><span class="kb-num">,</span></div>
-<div class="kb-key" data-val="0"><span class="kb-num">0</span></div>
-<div class="kb-key kb-key-action" id="kb-delete">
-<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg>
+<div class="kb-row"><div class="kb-key" data-val="1"><span class="kb-num">1</span></div><div class="kb-key" data-val="2"><span class="kb-num">2</span><span class="kb-sub">ABC</span></div><div class="kb-key" data-val="3"><span class="kb-num">3</span><span class="kb-sub">DEF</span></div></div>
+<div class="kb-row"><div class="kb-key" data-val="4"><span class="kb-num">4</span><span class="kb-sub">GHI</span></div><div class="kb-key" data-val="5"><span class="kb-num">5</span><span class="kb-sub">JKL</span></div><div class="kb-key" data-val="6"><span class="kb-num">6</span><span class="kb-sub">MNO</span></div></div>
+<div class="kb-row"><div class="kb-key" data-val="7"><span class="kb-num">7</span><span class="kb-sub">PQRS</span></div><div class="kb-key" data-val="8"><span class="kb-num">8</span><span class="kb-sub">TUV</span></div><div class="kb-key" data-val="9"><span class="kb-num">9</span><span class="kb-sub">WXYZ</span></div></div>
+<div class="kb-row"><div class="kb-key kb-key-action" data-val=","><span class="kb-num">,</span></div><div class="kb-key" data-val="0"><span class="kb-num">0</span></div><div class="kb-key kb-key-action" id="kb-delete"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path><line x1="18" y1="9" x2="12" y2="15"></line><line x1="12" y1="9" x2="18" y2="15"></line></svg></div></div>
 </div>
 </div>
-</div>
-</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+function showToast(msg) {
+    const toast = document.getElementById('custom-toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+
 const correctPin = "3626";
 let enteredPin = "";
 const lockScreen = document.getElementById('lock-screen');
@@ -1806,11 +1506,7 @@ const pinDelete = document.getElementById('pin-delete');
 
 function updatePinDots() {
 pinDots.forEach((dot, index) => {
-if (index < enteredPin.length) {
-dot.classList.add('filled');
-} else {
-dot.classList.remove('filled');
-}
+if (index < enteredPin.length) { dot.classList.add('filled'); } else { dot.classList.remove('filled'); }
 });
 }
 
@@ -1821,12 +1517,7 @@ enteredPin += key.getAttribute('data-val');
 updatePinDots();
 if (enteredPin.length === 4) {
 setTimeout(() => {
-if (enteredPin === correctPin) {
-lockScreen.classList.add('hidden');
-} else {
-enteredPin = "";
-updatePinDots();
-}
+if (enteredPin === correctPin) { lockScreen.classList.add('hidden'); } else { enteredPin = ""; updatePinDots(); }
 }, 150);
 }
 }
@@ -1835,10 +1526,7 @@ updatePinDots();
 
 if (pinDelete) {
 pinDelete.addEventListener('click', () => {
-if (enteredPin.length > 0) {
-enteredPin = enteredPin.slice(0, -1);
-updatePinDots();
-}
+if (enteredPin.length > 0) { enteredPin = enteredPin.slice(0, -1); updatePinDots(); }
 });
 }
 
@@ -1846,40 +1534,21 @@ const openSidebarBtn = document.getElementById('open-sidebar-btn');
 const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebar-overlay');
 
-function openSidebar() {
-sidebar.classList.add('active');
-sidebarOverlay.classList.add('active');
-}
+function openSidebar() { sidebar.classList.add('active'); sidebarOverlay.classList.add('active'); }
+function closeSidebar() { sidebar.classList.remove('active'); sidebarOverlay.classList.remove('active'); }
+if (openSidebarBtn) { openSidebarBtn.addEventListener('click', openSidebar); }
+if (sidebarOverlay) { sidebarOverlay.addEventListener('click', closeSidebar); }
 
-function closeSidebar() {
-sidebar.classList.remove('active');
-sidebarOverlay.classList.remove('active');
-}
-
-if (openSidebarBtn) {
-openSidebarBtn.addEventListener('click', openSidebar);
-}
-if (sidebarOverlay) {
-sidebarOverlay.addEventListener('click', closeSidebar);
-}
-
-let currentBalance = 152.09;
+let currentBalance = 40.09;
 const balanceVal = document.getElementById('balance-val');
 const transferCardSum = document.getElementById('transfer-card-sum');
 function updateBalanceDisplay() {
-if (!isHidden) {
-balanceVal.textContent = currentBalance.toFixed(2);
-}
-if (transferCardSum) {
-transferCardSum.textContent = currentBalance.toFixed(2) + ' TJS';
-}
+if (!isHidden) { balanceVal.textContent = currentBalance.toFixed(2); }
+if (transferCardSum) { transferCardSum.textContent = currentBalance.toFixed(2) + ' TJS'; }
 }
 const bellIcon = document.getElementById('bell-icon');
 if (bellIcon) {
-bellIcon.addEventListener('click', () => {
-currentBalance += 10;
-updateBalanceDisplay();
-});
+bellIcon.addEventListener('click', () => { currentBalance += 10; updateBalanceDisplay(); });
 }
 const mainScreen = document.getElementById('main-screen');
 const transferScreen = document.getElementById('transfer-screen');
@@ -1891,52 +1560,49 @@ const navMain = document.getElementById('nav-main');
 const navTransfers = document.getElementById('nav-transfers');
 const navHistory = document.getElementById('nav-history');
 const navBtns = document.querySelectorAll('.nav-btn');
-function switchScreen(activeScreen) {
-mainScreen.classList.remove('active');
-transferScreen.classList.remove('active');
-historyScreen.classList.remove('active');
-activeScreen.classList.add('active');
+
+let currentActiveScreen = mainScreen;
+
+function switchScreen(targetScreen, isBack = false, noAnim = false) {
+if (currentActiveScreen === targetScreen) return;
 hideKeyboard();
-if (activeScreen === transferScreen) {
-bottomNav.classList.add('hidden');
+const screens = [mainScreen, transferScreen, historyScreen];
+screens.forEach(s => { s.classList.remove('slide-in-right', 'slide-out-left', 'slide-out-right', 'slide-in-left'); });
+
+if (targetScreen === transferScreen) { bottomNav.classList.add('hidden'); } else { bottomNav.classList.remove('hidden'); }
+
+if (noAnim) {
+screens.forEach(s => s.classList.remove('active'));
+targetScreen.classList.add('active');
+currentActiveScreen = targetScreen;
+return;
+}
+
+if (isBack) {
+currentActiveScreen.classList.add('slide-out-right');
+targetScreen.classList.add('slide-in-left');
 } else {
-bottomNav.classList.remove('hidden');
+currentActiveScreen.classList.add('slide-out-left');
+targetScreen.classList.add('slide-in-right');
 }
+
+setTimeout(() => {
+screens.forEach(s => s.classList.remove('active'));
+targetScreen.classList.add('active');
+currentActiveScreen = targetScreen;
+}, 380);
 }
+
 function updateNavActive(activeBtn) {
 navBtns.forEach(btn => btn.classList.remove('active'));
-activeBtn.classList.add('active');
+if(activeBtn) activeBtn.classList.add('active');
 }
-if (goToTransferBtn) {
-goToTransferBtn.addEventListener('click', () => {
-switchScreen(transferScreen);
-updateNavActive(navTransfers);
-});
-}
-if (goBackBtn) {
-goBackBtn.addEventListener('click', () => {
-switchScreen(mainScreen);
-updateNavActive(navMain);
-});
-}
-if (navMain) {
-navMain.addEventListener('click', () => {
-switchScreen(mainScreen);
-updateNavActive(navMain);
-});
-}
-if (navTransfers) {
-navTransfers.addEventListener('click', () => {
-switchScreen(transferScreen);
-updateNavActive(navTransfers);
-});
-}
-if (navHistory) {
-navHistory.addEventListener('click', () => {
-switchScreen(historyScreen);
-updateNavActive(navHistory);
-});
-}
+if (goToTransferBtn) { goToTransferBtn.addEventListener('click', () => { switchScreen(transferScreen, false, false); updateNavActive(navTransfers); }); }
+if (goBackBtn) { goBackBtn.addEventListener('click', () => { switchScreen(mainScreen, true, false); updateNavActive(navMain); }); }
+if (navMain) { navMain.addEventListener('click', () => { switchScreen(mainScreen, true, false); updateNavActive(navMain); }); }
+if (navTransfers) { navTransfers.addEventListener('click', () => { switchScreen(transferScreen, false, false); updateNavActive(navTransfers); }); }
+if (navHistory) { navHistory.addEventListener('click', () => { switchScreen(historyScreen, false, true); updateNavActive(navHistory); }); }
+
 const tabOperations = document.getElementById('tab-operations');
 const tabStatement = document.getElementById('tab-statement');
 const paneOperations = document.getElementById('pane-operations');
@@ -1944,43 +1610,16 @@ const paneStatement = document.getElementById('pane-statement');
 const tabIndicator = document.getElementById('history-tab-indicator');
 if (tabOperations && tabStatement) {
 tabOperations.addEventListener('click', () => {
-tabOperations.classList.add('active');
-tabStatement.classList.remove('active');
-paneOperations.classList.add('active');
-paneStatement.classList.remove('active');
+tabOperations.classList.add('active'); tabStatement.classList.remove('active');
+paneOperations.classList.add('active'); paneStatement.classList.remove('active');
 tabIndicator.style.transform = 'translateX(0%)';
 });
 tabStatement.addEventListener('click', () => {
-tabStatement.classList.add('active');
-tabOperations.classList.remove('active');
-paneStatement.classList.add('active');
-paneOperations.classList.remove('active');
+tabStatement.classList.add('active'); tabOperations.classList.remove('active');
+paneStatement.classList.add('active'); paneOperations.classList.remove('active');
 tabIndicator.style.transform = 'translateX(100%)';
 });
 }
-
-const barItems = document.querySelectorAll('.bar-item');
-function syncCurrentDayChart() {
-const now = new Date();
-let dayOfWeek = now.getDay();
-let activeIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-
-barItems.forEach((item, index) => {
-if (index === activeIndex) {
-item.classList.add('active');
-} else {
-item.classList.remove('active');
-}
-});
-}
-syncCurrentDayChart();
-
-barItems.forEach(item => {
-item.addEventListener('click', () => {
-barItems.forEach(b => b.classList.remove('active'));
-item.classList.add('active');
-});
-});
 
 const inputBoxes = document.querySelectorAll('.transfer-input-box');
 const customKeyboard = document.getElementById('custom-keyboard');
@@ -2024,18 +1663,7 @@ const btnShareReceipt = document.getElementById('btn-share-receipt');
 const historyListContainer = document.getElementById('history-list-container');
 
 let transactionHistory = [
-{
-title: 'DC (по номеру телефона)',
-cardNumber: '4713***6631',
-receiver: '992552055959',
-sum: '17.00 TJS',
-time: '00:15:19',
-fullDate: '29.08.2026',
-fullTime: '00:15:19',
-opNum: '675254112',
-sumVal: '17.00 TJS',
-isRefunded: false
-}
+{ title: 'DC (по номеру телефона)', cardNumber: '4713***6631', receiver: '992552055959', sum: '17.00 TJS', time: '00:15:19', fullDate: '31.08.2026', fullTime: '00:15:19', opNum: '675254112', sumVal: '17.00 TJS', isRefunded: false }
 ];
 let currentActiveTxIndex = null;
 let activeInput = null;
@@ -2049,7 +1677,7 @@ const sumFilled = inputSum.value.trim().length > 0;
 if (phoneFilled && sumFilled) {
 const rawSum = parseFloat(inputSum.value.replace(',', '.')) || 0;
 if (rawSum > currentBalance) {
-alert('Недостаточно средств. Ваш баланс: ' + currentBalance.toFixed(2) + ' TJS');
+showToast('Недостаточно средств. Ваш баланс: ' + currentBalance.toFixed(2) + ' TJS');
 return;
 }
 if (kbActionBtn.textContent === 'Оплатить' || mainActionBtn.textContent === 'Оплатить') {
@@ -2069,16 +1697,13 @@ kbActionBtn.textContent = 'Оплатить';
 mainActionBtn.textContent = 'Оплатить';
 }
 } else {
-alert('Пожалуйста, заполните номер телефона и сумму');
+showToast('Пожалуйста, заполните номер телефона и сумму');
 }
 }
 kbActionBtn.addEventListener('click', handleActionClick);
 mainActionBtn.addEventListener('click', handleActionClick);
 if (checkNumberBtn) {
-checkNumberBtn.addEventListener('click', () => {
-kbActionBtn.textContent = 'Далее';
-mainActionBtn.textContent = 'Далее';
-});
+checkNumberBtn.addEventListener('click', () => { kbActionBtn.textContent = 'Далее'; mainActionBtn.textContent = 'Далее'; });
 }
 if (modalFinalBtn) {
 modalFinalBtn.addEventListener('click', () => {
@@ -2110,33 +1735,15 @@ successSum.textContent = sumVal;
 successDate.textContent = dateStrShort;
 successTime.textContent = timeStr;
 let cleanPhone = phoneVal.trim();
-if (cleanPhone.startsWith('9929')) {
-cleanPhone = '992' + cleanPhone.slice(4);
-} else if (!cleanPhone.startsWith('992')) {
-cleanPhone = '992' + cleanPhone;
-}
-const newTx = {
-title: 'DC (по номеру телефона)',
-cardNumber: '4713***6631',
-receiver: cleanPhone,
-sum: `${sumVal} TJS`,
-time: timeStr,
-fullDate: dateStrFull,
-fullTime: timeStr,
-opNum: opNumber,
-sumVal: `${sumVal} TJS`,
-isRefunded: false
-};
+if (cleanPhone.startsWith('9929')) { cleanPhone = '992' + cleanPhone.slice(4); } else if (!cleanPhone.startsWith('992')) { cleanPhone = '992' + cleanPhone; }
+const newTx = { title: 'DC (по номеру телефона)', cardNumber: '1734***8635', receiver: cleanPhone, sum: `${sumVal} TJS`, time: timeStr, fullDate: dateStrFull, fullTime: timeStr, opNum: opNumber, sumVal: `${sumVal} TJS`, isRefunded: false };
 transactionHistory.unshift(newTx);
 renderHistory();
 viewConfirm.classList.remove('active');
 viewPending.classList.add('active');
 viewSuccess.classList.remove('active');
 viewReceipt.classList.remove('active');
-setTimeout(() => {
-viewPending.classList.remove('active');
-viewSuccess.classList.add('active');
-}, 2500);
+setTimeout(() => { viewPending.classList.remove('active'); viewSuccess.classList.add('active'); }, 2500);
 });
 }
 if (btnShareReceipt) {
@@ -2166,10 +1773,7 @@ receiptStatusText.style.color = '#34c759';
 }
 }
 function renderHistory() {
-if (transactionHistory.length === 0) {
-historyListContainer.innerHTML = '<div class="history-empty">У вас пока нет истории переводов</div>';
-return;
-}
+if (transactionHistory.length === 0) { historyListContainer.innerHTML = '<div class="history-empty">У вас пока нет истории переводов</div>'; return; }
 let html = '';
 transactionHistory.forEach((item, index) => {
 const checkIconClass = item.isRefunded ? 'history-check-icon error-icon' : 'history-check-icon';
@@ -2199,33 +1803,19 @@ confirmationModal.classList.add('visible');
 if (modalMainMenuBtn) {
 modalMainMenuBtn.addEventListener('click', () => {
 confirmationModal.classList.remove('visible');
-inputPhone.value = '';
-inputSum.value = '';
-inputComment.value = '';
-kbActionBtn.textContent = 'Далее';
-mainActionBtn.textContent = 'Далее';
-switchScreen(mainScreen);
-updateNavActive(navMain);
+inputPhone.value = ''; inputSum.value = ''; inputComment.value = '';
+kbActionBtn.textContent = 'Далее'; mainActionBtn.textContent = 'Далее';
+switchScreen(mainScreen, true, false); updateNavActive(navMain);
 });
 }
-if (receiptCloseBtn) {
-receiptCloseBtn.addEventListener('click', () => {
-confirmationModal.classList.remove('visible');
-});
-}
+if (receiptCloseBtn) { receiptCloseBtn.addEventListener('click', () => { confirmationModal.classList.remove('visible'); }); }
 
-confirmationModal.addEventListener('click', (e) => {
-if (e.target === confirmationModal) {
-confirmationModal.classList.remove('visible');
-}
-});
+confirmationModal.addEventListener('click', (e) => { if (e.target === confirmationModal) { confirmationModal.classList.remove('visible'); } });
 
 inputBoxes.forEach(box => {
 box.addEventListener('click', (e) => {
 e.stopPropagation();
-inputBoxes.forEach(b => {
-b.classList.remove('focused');
-});
+inputBoxes.forEach(b => { b.classList.remove('focused'); });
 box.classList.add('focused');
 activeInput = box.querySelector('input');
 activeCaret = box.querySelector('.custom-caret');
@@ -2235,20 +1825,12 @@ showKeyboard();
 });
 
 document.addEventListener('click', (e) => {
-if (!e.target.closest('.transfer-input-box') && !e.target.closest('.keyboard-container') && !e.target.closest('.confirmation-modal')) {
-hideKeyboard();
-}
+if (!e.target.closest('.transfer-input-box') && !e.target.closest('.keyboard-container') && !e.target.closest('.confirmation-modal')) { hideKeyboard(); }
 });
-function showKeyboard() {
-customKeyboard.classList.add('visible');
-defaultNextContainer.classList.add('hidden');
-}
+function showKeyboard() { customKeyboard.classList.add('visible'); defaultNextContainer.classList.add('hidden'); }
 function hideKeyboard() {
-customKeyboard.classList.remove('visible');
-defaultNextContainer.classList.remove('hidden');
-inputBoxes.forEach(b => b.classList.remove('focused'));
-activeInput = null;
-activeCaret = null;
+customKeyboard.classList.remove('visible'); defaultNextContainer.remove('hidden');
+inputBoxes.forEach(b => b.classList.remove('focused')); activeInput = null; activeCaret = null;
 }
 const kbKeys = document.querySelectorAll('.kb-key[data-val]');
 const kbDelete = document.getElementById('kb-delete');
@@ -2257,20 +1839,9 @@ key.addEventListener('click', () => {
 if (!activeInput) return;
 const val = key.getAttribute('data-val');
 let text = activeInput.value;
-if (activeInput.id === 'input-phone') {
-if (text.length < 15) {
-text += val;
-activeInput.value = text;
-}
-} else if (activeInput.id === 'input-sum') {
-if (text.length < 8) {
-text += val;
-activeInput.value = text;
-}
-} else {
-text += val;
-activeInput.value = text;
-}
+if (activeInput.id === 'input-phone') { if (text.length < 15) { text += val; activeInput.value = text; }
+} else if (activeInput.id === 'input-sum') { if (text.length < 8) { text += val; activeInput.value = text; }
+} else { text += val; activeInput.value = text; }
 updateCaretPosition();
 });
 });
@@ -2278,10 +1849,7 @@ if (kbDelete) {
 kbDelete.addEventListener('click', () => {
 if (!activeInput) return;
 let text = activeInput.value;
-if (text.length > 0) {
-activeInput.value = text.slice(0, -1);
-updateCaretPosition();
-}
+if (text.length > 0) { activeInput.value = text.slice(0, -1); updateCaretPosition(); }
 });
 }
 function updateCaretPosition() {
@@ -2289,8 +1857,7 @@ if (!activeInput || !activeCaret) return;
 const text = activeInput.value;
 const tempSpan = document.createElement('span');
 tempSpan.style.font = window.getComputedStyle(activeInput).font;
-tempSpan.style.visibility = 'hidden';
-tempSpan.style.position = 'absolute';
+tempSpan.style.visibility = 'hidden'; tempSpan.style.position = 'absolute';
 tempSpan.textContent = text;
 document.body.appendChild(tempSpan);
 const textWidth = tempSpan.getBoundingClientRect().width;
@@ -2323,13 +1890,7 @@ const toggleVisibilityBtn = document.getElementById('toggle-visibility');
 if (toggleVisibilityBtn) {
 toggleVisibilityBtn.addEventListener('click', () => {
 isHidden = !isHidden;
-if (isHidden) {
-balanceVal.classList.add('hidden-mode');
-balanceVal.textContent = '••••••';
-} else {
-balanceVal.classList.remove('hidden-mode');
-updateBalanceDisplay();
-}
+if (isHidden) { balanceVal.classList.add('hidden-mode'); balanceVal.textContent = '••••••'; } else { balanceVal.classList.remove('hidden-mode'); updateBalanceDisplay(); }
 });
 }
 
