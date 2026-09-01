@@ -782,7 +782,11 @@ transition: border-color 0.2s;
 .single-account-card .card-top { font-size: 10px; font-weight: 700; letter-spacing: 0.3px; color: rgba(255, 255, 255, 0.9); }
 .single-account-card .card-sum { font-size: 13px; font-weight: 750; }
 .transfer-notice { font-size: 12px; color: #64748b; line-height: 1.45; font-weight: 600; margin-bottom: 20px; width: 100%; }
+.default-next-container { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 16px; right: 16px; z-index: 50; }
+.default-next-container.hidden { display: none; }
+.next-btn { width: 100%; background: #f97316; border: none; border-radius: 16px; padding: 16px; color: white; font-size: 16px; font-weight: 750; cursor: pointer; text-align: center; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3); }
 
+/* HISTORY SCREEN */
 .history-tabs-header { display: flex; background: #ffffff; position: relative; border-bottom: 1px solid #e2e8f0; padding-top: env(safe-area-inset-top); }
 .history-tab { flex: 1; text-align: center; padding: 14px 0; font-size: 15px; font-weight: 700; color: #94a3b8; background: none; border: none; cursor: pointer; position: relative; }
 .history-tab.active { color: #0f172a; font-weight: 750; }
@@ -831,7 +835,7 @@ max-width: 90%;
 
 .confirmation-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 2000; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
 .confirmation-modal.visible { opacity: 1; pointer-events: auto; }
-.modal-content { width: 100%; max-width: 100%; background: #ffffff; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 18px 20px calc(36px + env(safe-area-inset-bottom)) 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; justify-content: space-between; }
+.modal-content { width: 100%; max-width: 100%; background: #ffffff; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 18px 20px calc(24px + env(safe-area-inset-bottom)) 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); max-height: 90vh; overflow-y: auto; display: flex; flex-direction: column; justify-content: space-between; }
 .confirmation-modal.visible .modal-content { transform: translateY(0); }
 .modal-handle { width: 36px; height: 4px; background: #cbd5e1; border-radius: 2px; margin: 0 auto 16px auto; }
 .modal-subtitle { font-size: 13px; color: #94a3b8; font-weight: 700; margin-bottom: 4px; }
@@ -842,34 +846,68 @@ max-width: 90%;
 .modal-value { color: #0f172a; font-weight: 750; }
 .modal-confirm-btn { width: 100%; background: #2b74f6; border: none; border-radius: 16px; padding: 16px; color: white; font-size: 16px; font-weight: 750; cursor: pointer; text-align: center; box-shadow: 0 4px 14px rgba(43, 116, 246, 0.3); }
 
-.receipt-view, .status-view { display: none; flex-direction: column; width: 100%; align-items: center; text-align: center; flex: 1; justify-content: flex-start; padding-top: 10px; }
+/* --- СТИЛИ ЧЕКА (УМЕНЬШЕННЫЙ РАЗМЕР ПЕЧАТИ КАК НА ФОТО) --- */
+.receipt-view, .status-view { display: none; flex-direction: column; width: 100%; align-items: stretch; text-align: left; flex: 1; justify-content: flex-start; padding-top: 6px; }
 .receipt-view.active, .status-view.active { display: flex; }
-.bank-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; width: 100%; }
-.bank-logo { display: flex; align-items: center; gap: 8px; }
-.logo-icon { width: 36px; height: 36px; background-color: #2b74f6; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 14px; }
-.logo-text { line-height: 1.05; text-align: left; }
-.logo-text .dushanbe { font-size: 14px; font-weight: 500; color: #165296; letter-spacing: 0.8px; }
-.logo-text .city-sub { font-size: 14px; font-weight: 500; color: #165296; letter-spacing: 0.8px; }
-.bank-info { text-align: right; }
-.bank-name { font-size: 13px; font-weight: 700; color: #7b7b80; }
-.bank-details { font-size: 11px; color: #7b7b80; font-weight: 700; margin-top: 2px; line-height: 1.3; }
-.divider { height: 1px; background-color: #e5e5ea; width: 100%; margin: 0 0 16px 0; }
+.bank-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; width: 100%; gap: 10px; }
+.bank-logo { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.logo-icon { width: 34px; height: 34px; background-color: #2b74f6; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: white; font-weight: 800; font-size: 13px; }
+.logo-text { line-height: 1.1; text-align: left; }
+.logo-text .dushanbe { font-size: 13px; font-weight: 750; color: #2b74f6; letter-spacing: 0.3px; }
+.logo-text .city-sub { font-size: 13px; font-weight: 750; color: #2b74f6; letter-spacing: 0.3px; }
+.bank-info { text-align: right; flex-shrink: 1; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
+.bank-name { font-size: 12px; font-weight: 750; color: #64748b; margin-bottom: 2px; }
+.bank-details { font-size: 10px; color: #94a3b8; font-weight: 600; line-height: 1.25; }
+
+/* ТОНКИЕ, ЕЛЕ ЗАМЕТНЫЕ РАЗДЕЛИТЕЛЬНЫЕ ЛИНИИ */
+.divider { 
+    height: 1px; 
+    background-color: #f1f5f9; 
+    width: 100%; 
+    margin: 0 0 14px 0; 
+}
+
 .receipt-details { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; width: 100%; }
-.detail-row { display: flex; justify-content: space-between; align-items: center; }
-.detail-label { font-size: 14px; color: #7b7b80; font-weight: 700; }
-.detail-value { font-size: 14px; color: #1c1c1e; font-weight: 600; text-align: right; }
-.detail-value.success { color: #34c759; font-weight: 700; }
-.status-stamp-container { display: flex; justify-content: center; margin-bottom: 24px; width: 100%; }
-.status-badge-box { border: 1px solid #2da1ff; border-radius: 4px; padding: 6px 16px; text-align: center; background-color: #ffffff; display: inline-block; transition: all 0.2s ease; }
-.status-subtitle { font-size: 8px; color: #2da1ff; font-weight: 500; letter-spacing: 0.1px; margin-bottom: 2px; }
-.status-title { font-size: 13px; color: #2da1ff; font-weight: 700; letter-spacing: 0.3px; line-height: 1.1; text-transform: uppercase; }
+.detail-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.detail-label { font-size: 13px; color: #64748b; font-weight: 600; flex-shrink: 0; }
+.detail-value { font-size: 13px; color: #0f172a; font-weight: 750; text-align: right; word-break: break-word; }
+.detail-value.success { color: #10b981; }
+
+.status-stamp-container { display: flex; justify-content: center; margin-bottom: 20px; width: 100%; }
+
+/* УМЕНЬШЕННЫЙ И ТОЧНЫЙ РАЗМЕР ПЕЧАТИ */
+.status-badge-box { 
+    border: 1px solid #2da1ff; 
+    border-radius: 4px; 
+    padding: 5px 14px; 
+    text-align: center; 
+    background-color: #ffffff; 
+    display: inline-block; 
+}
+.status-subtitle { 
+    font-size: 7.5px; 
+    color: #2da1ff; 
+    font-weight: 600; 
+    letter-spacing: 0.1px; 
+    margin-bottom: 1px; 
+}
+.status-title { 
+    font-size: 11.5px; 
+    color: #2da1ff; 
+    font-weight: 750; 
+    letter-spacing: 0.3px; 
+    line-height: 1.1; 
+    text-transform: uppercase; 
+}
+
 .error-badge-icon { display: none; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid #ef4444; color: #ef4444; font-size: 11px; font-weight: 900; align-items: center; justify-content: center; line-height: 1; margin-left: 6px; }
 .receipt-sum-container { display: inline-flex; align-items: center; justify-content: flex-end; }
 .receipt-sum-container.is-refunded .error-badge-icon { display: inline-flex; }
-.receipt-actions-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 24px; width: 100%; }
+.receipt-actions-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; width: 100%; }
 .receipt-action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; }
-.receipt-action-icon { width: 50px; height: 50px; background-color: #f2f2f7; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #1c1c1e; font-size: 20px; }
-.receipt-action-label { font-size: 11px; color: #3a3a3c; font-weight: 500; }
+.receipt-action-icon { width: 48px; height: 48px; background-color: #f1f5f9; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #0f172a; }
+.receipt-action-icon svg { width: 22px; height: 22px; stroke: currentColor; }
+.receipt-action-label { font-size: 11px; color: #0f172a; font-weight: 600; text-align: center; }
 
 .status-icon-box { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; }
 .status-icon-box.pending { background: #fff7ed; color: #f97316; border: 2px solid #ffedd5; }
@@ -887,9 +925,6 @@ max-width: 90%;
 .kb-num { font-size: 24px; font-weight: 400; color: #0f172a; line-height: 1; }
 .kb-sub { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #0f172a; margin-top: 3px; }
 .kb-key-action { background: #e2e8f0; }
-.default-next-container { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 16px; right: 16px; z-index: 50; }
-.default-next-container.hidden { display: none; }
-.next-btn { width: 100%; background: #f97316; border: none; border-radius: 16px; padding: 16px; color: white; font-size: 16px; font-weight: 750; cursor: pointer; text-align: center; box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3); }
 </style>
 </head>
 <body>
@@ -1101,7 +1136,7 @@ max-width: 90%;
     <!-- MINI APPS TITLE -->
     <div class="section-header">
         <div class="section-title-box">
-            <svg viewBox="0 0 24 24"><path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4V4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M4 4h4v4H4V4zm6 0h4v4h-4V4zm6 0h4v4h-4v-4zM4 10h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4zM4 16h4v4H4v-4zm6 0h4v4h-4v-4zm6 0h4v4h-4v-4z"/></svg>
             <span>Мини приложения</span>
         </div>
         <a href="#" class="see-all">Все ></a>
@@ -1450,7 +1485,7 @@ max-width: 90%;
 <div class="detail-row"><span class="detail-label">Комиссия:</span><span class="detail-value">0.00</span></div>
 <div class="detail-row"><span class="detail-label">Статус:</span><span class="detail-value success" id="receipt-status-text">Успешный</span></div>
 </div>
-<div class="divider" style="margin-bottom: 16px;"></div>
+<div class="divider" style="margin-bottom: 12px;"></div>
 <div class="status-stamp-container">
 <div class="status-badge-box" id="receipt-badge-box">
 <div class="status-subtitle">ЗАО «Душанбе Сити Банк»</div>
@@ -1472,7 +1507,7 @@ max-width: 90%;
 </button>
 </div>
 </div>
-<button class="modal-confirm-btn" id="receipt-close-btn" style="background: #2b74f6;">Закрыть</button>
+<button class="modal-confirm-btn" id="receipt-close-btn">Закрыть</button>
 </div>
 </div>
 </div>
@@ -1769,7 +1804,7 @@ receiptBadgeStatus.innerHTML = 'ОПЕРАЦИЯ<br>ВЫПОЛНЕНА';
 receiptBadgeStatus.style.color = '#2da1ff';
 receiptSumContainer.classList.remove('is-refunded');
 receiptStatusText.textContent = 'Успешный';
-receiptStatusText.style.color = '#34c759';
+receiptStatusText.style.color = '#10b981';
 }
 }
 function renderHistory() {
