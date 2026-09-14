@@ -858,19 +858,20 @@ max-width: 90%;
 .modal-confirm-btn { width: 100%; background: #2b74f6; border: none; border-radius: 16px; padding: 16px; color: white; font-size: 16px; font-weight: 750; cursor: pointer; text-align: center; box-shadow: 0 4px 14px rgba(43, 116, 246, 0.3); }
 
 /* --- СТИЛИ ЧЕКА (УМЕНЬШЕННЫЙ РАЗМЕР ПЕЧАТИ КАК НА ФОТО) --- */
+.receipt-view { font-family: ui-rounded, -apple-system, "SF Pro Rounded", BlinkMacSystemFont, "Helvetica Neue", Roboto, Arial, sans-serif; }
 .receipt-view, .status-view { display: none; flex-direction: column; width: 100%; align-items: stretch; text-align: left; flex: 1; justify-content: flex-start; padding-top: 6px; }
 .receipt-view.active, .status-view.active { display: flex; }
 .bank-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; width: 100%; gap: 10px; }
 .bank-logo { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .logo-icon { width: 34px; height: 34px; background-color: #2b74f6; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: white; font-weight: 800; font-size: 13px; }
 .logo-icon-svg { width: 36px; height: 36px; flex-shrink: 0; display: block; }
-.logo-full-img { width: 150px; height: auto; display: block; }
+.logo-full-img { width: 132px; height: auto; display: block; }
 .logo-text { line-height: 1.15; text-align: left; }
 .logo-text .dushanbe { font-size: 13px; font-weight: 800; color: #1d4ed8; letter-spacing: 0.3px; }
 .logo-text .city-sub { font-size: 15px; font-weight: 800; color: #1d4ed8; letter-spacing: 0.3px; }
 .bank-info { text-align: right; flex-shrink: 1; display: flex; flex-direction: column; align-items: flex-end; justify-content: center; }
-.bank-name { font-size: 12px; font-weight: 750; color: #64748b; margin-bottom: 2px; }
-.bank-details { font-size: 10px; color: #94a3b8; font-weight: 600; line-height: 1.25; }
+.bank-name { font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 3px; letter-spacing: 0.1px; white-space: nowrap; }
+.bank-details { font-size: 11.5px; color: #6b7280; font-weight: 600; line-height: 1.35; }
 
 /* ТОНКИЕ, ЕЛЕ ЗАМЕТНЫЕ РАЗДЕЛИТЕЛЬНЫЕ ЛИНИИ */
 .divider { 
@@ -880,36 +881,37 @@ max-width: 90%;
     margin: 0 0 14px 0; 
 }
 
-.receipt-details { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; width: 100%; }
+.receipt-details { display: flex; flex-direction: column; gap: 13px; margin-bottom: 18px; width: 100%; }
 .detail-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.detail-label { font-size: 13px; color: #64748b; font-weight: 600; flex-shrink: 0; }
-.detail-value { font-size: 13px; color: #0f172a; font-weight: 750; text-align: right; word-break: break-word; }
-.detail-value.success { color: #10b981; }
+.detail-label { font-size: 14px; color: #6b7280; font-weight: 700; flex-shrink: 0; }
+.detail-value { font-size: 14px; color: #14171f; font-weight: 700; text-align: right; word-break: break-word; }
+.detail-value.success { color: #22c55e; }
 
 .status-stamp-container { display: flex; justify-content: center; margin-bottom: 20px; width: 100%; }
 
 /* УМЕНЬШЕННЫЙ И ТОЧНЫЙ РАЗМЕР ПЕЧАТИ */
 .status-badge-box { 
-    border: 1px solid #2da1ff; 
-    border-radius: 4px; 
-    padding: 5px 14px; 
+    border: 1.5px solid #1ca8e0; 
+    border-radius: 3px; 
+    padding: 6px 14px; 
     text-align: center; 
     background-color: #ffffff; 
     display: inline-block; 
+    font-family: Arial, Helvetica, sans-serif;
 }
 .status-subtitle { 
-    font-size: 7.5px; 
-    color: #2da1ff; 
+    font-size: 9px; 
+    color: #1ca8e0; 
     font-weight: 600; 
     letter-spacing: 0.1px; 
-    margin-bottom: 1px; 
+    margin-bottom: 2px; 
 }
 .status-title { 
-    font-size: 11.5px; 
-    color: #2da1ff; 
-    font-weight: 750; 
+    font-size: 13px; 
+    color: #1ca8e0; 
+    font-weight: 700; 
     letter-spacing: 0.3px; 
-    line-height: 1.1; 
+    line-height: 1.15; 
     text-transform: uppercase; 
 }
 
@@ -917,10 +919,10 @@ max-width: 90%;
 .receipt-sum-container { display: inline-flex; align-items: center; justify-content: flex-end; }
 .receipt-sum-container.is-refunded .error-badge-icon { display: inline-flex; }
 .receipt-actions-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; width: 100%; }
-.receipt-action-item { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; }
-.receipt-action-icon { width: 48px; height: 48px; background-color: #f1f5f9; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #0f172a; }
-.receipt-action-icon svg { width: 22px; height: 22px; stroke: currentColor; }
-.receipt-action-label { font-size: 11px; color: #0f172a; font-weight: 600; text-align: center; }
+.receipt-action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; background: none; border: none; cursor: pointer; }
+.receipt-action-icon { width: 56px; height: 56px; background-color: #eef0f3; border-radius: 18px; display: flex; justify-content: center; align-items: center; color: #2b74f6; }
+.receipt-action-icon svg { width: 26px; height: 26px; stroke: currentColor; }
+.receipt-action-label { font-size: 11px; color: #4b5563; font-weight: 700; text-align: center; white-space: nowrap; }
 
 .status-icon-box { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; }
 .status-icon-box.pending { background: #fff7ed; color: #f97316; border: 2px solid #ffedd5; }
@@ -1439,20 +1441,20 @@ max-width: 90%;
 </div>
 <div class="receipt-actions-row">
 <button class="receipt-action-item" id="btn-share-receipt">
-<div class="receipt-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg></div><span class="receipt-action-label">Поделиться</span>
+<div class="receipt-action-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-6"></path><line x1="7" y1="8" x2="13" y2="8"></line><line x1="7" y1="12.5" x2="10.5" y2="12.5"></line><circle cx="17.5" cy="5.5" r="1.8"></circle><circle cx="17.5" cy="12.5" r="1.8"></circle><circle cx="21" cy="9" r="1.8"></circle><line x1="18.9" y1="6.6" x2="19.6" y2="7.9"></line><line x1="18.9" y1="11.4" x2="19.6" y2="10.1"></line></svg></div><span class="receipt-action-label">Поделиться</span>
 </button>
 <button class="receipt-action-item">
-<div class="receipt-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></div><span class="receipt-action-label">Сохранить</span>
+<div class="receipt-action-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="4" width="15" height="16" rx="4"></rect><line x1="12" y1="2.5" x2="12" y2="13.5"></line><polyline points="8.7 10 12 13.5 15.3 10"></polyline></svg></div><span class="receipt-action-label">Сохранить</span>
 </button>
 <button class="receipt-action-item">
-<div class="receipt-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div><span class="receipt-action-label">В избранные</span>
+<div class="receipt-action-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div><span class="receipt-action-label">В избранные</span>
 </button>
 <button class="receipt-action-item">
-<div class="receipt-action-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg></div><span class="receipt-action-label">Повторить</span>
+<div class="receipt-action-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 6 C19.5 6 20.5 12.5 13.5 12.5 H9.5" fill="none"></path><polygon points="12 8.3 6.2 12.5 12 16.7" fill="currentColor" stroke="none"></polygon></svg></div><span class="receipt-action-label">Повторить</span>
 </button>
 </div>
 </div>
-<button class="modal-confirm-btn" id="receipt-close-btn">Закрыть</button>
+<button class="modal-confirm-btn" id="receipt-close-btn" style="font-family: ui-rounded, -apple-system, BlinkMacSystemFont, sans-serif; font-size: 17px; font-weight: 700; border-radius: 18px; padding: 16px;">Закрыть</button>
 </div>
 </div>
 </div>
@@ -1744,9 +1746,9 @@ receiptSumContainer.classList.add('is-refunded');
 receiptStatusText.textContent = 'Ошибка';
 receiptStatusText.style.color = '#ef4444';
 } else {
-receiptBadgeBox.style.borderColor = '#2da1ff';
+receiptBadgeBox.style.borderColor = '#1ca8e0';
 receiptBadgeStatus.innerHTML = 'ОПЕРАЦИЯ<br>ВЫПОЛНЕНА';
-receiptBadgeStatus.style.color = '#2da1ff';
+receiptBadgeStatus.style.color = '#1ca8e0';
 receiptSumContainer.classList.remove('is-refunded');
 receiptStatusText.textContent = 'Успешный';
 receiptStatusText.style.color = '#10b981';
