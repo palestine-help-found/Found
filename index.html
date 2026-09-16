@@ -1731,7 +1731,14 @@ setTimeout(() => { viewPending.classList.remove('active'); viewSuccess.classList
 if (btnShareReceipt) {
 btnShareReceipt.addEventListener('click', () => {
 if (currentActiveTxIndex !== null && transactionHistory[currentActiveTxIndex]) {
-transactionHistory[currentActiveTxIndex].isRefunded = true;
+const tx = transactionHistory[currentActiveTxIndex];
+if (!tx.isRefunded) {
+tx.isRefunded = true;
+const refundAmount = parseFloat(String(tx.sumVal).replace(',', '.')) || 0;
+currentBalance += refundAmount;
+updateBalanceDisplay();
+showToast('Ошибка при отправке. Средства возвращены на баланс: ' + refundAmount.toFixed(2) + ' TJS');
+}
 applyReceiptRefundStyle(true);
 renderHistory();
 }
