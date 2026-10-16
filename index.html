@@ -929,8 +929,8 @@ max-width: 90%;
 .status-icon-box { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px auto; }
 .status-icon-box.pending { background: #fff7ed; color: #f97316; border: 2px solid #ffedd5; }
 .status-icon-box.success { background: #ecfdf5; color: #10b981; border: 2px solid #d1fae5; }
-.status-title-pending { font-size: 20px; font-weight: 750; color: #f97316; margin-bottom: 24px; }
-.status-title-success { font-size: 20px; font-weight: 750; color: #2b74f6; margin-bottom: 24px; }
+.status-title-pending { font-size: 20px; font-weight: 750; color: #f97316; margin-bottom: 24px; text-align: center; }
+.status-title-success { font-size: 20px; font-weight: 750; color: #2b74f6; margin-bottom: 24px; text-align: center; }
 
 .keyboard-container { position: fixed; bottom: 0; left: 0; right: 0; width: 100%; background: #d1d5db; padding: 10px 10px calc(28px + env(safe-area-inset-bottom)) 10px; border-top-left-radius: 14px; border-top-right-radius: 14px; box-shadow: 0 -6px 25px rgba(0,0,0,0.18); z-index: 1000; display: none; }
 .keyboard-container.visible { display: block; }
@@ -942,6 +942,32 @@ max-width: 90%;
 .kb-num { font-size: 24px; font-weight: 400; color: #0f172a; line-height: 1; }
 .kb-sub { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: #0f172a; margin-top: 3px; }
 .kb-key-action { background: #e2e8f0; }
+
+/* RECENT PAYMENTS SHEET: последние номера получателей (иконка с часами в поле номера) */
+#open-recent-btn { box-sizing: content-box; padding: 6px; margin: -6px; }
+.recent-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.45); z-index: 1500; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+.recent-overlay.visible { opacity: 1; pointer-events: auto; }
+.recent-sheet { width: 100%; max-height: 78vh; background: #ffffff; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -10px 30px rgba(0,0,0,0.15); display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); }
+.recent-overlay.visible .recent-sheet { transform: translateY(0); }
+.recent-grab { flex-shrink: 0; padding-top: 12px; touch-action: none; cursor: grab; }
+.recent-grab .modal-handle { margin-bottom: 14px; }
+.recent-head { display: flex; align-items: center; gap: 14px; padding: 4px 20px 16px 20px; border-bottom: 1px solid #eef0f4; }
+.recent-head-icon { width: 52px; height: 52px; flex-shrink: 0; border-radius: 16px; background: #e3effe; display: flex; align-items: center; justify-content: center; }
+.recent-head-icon svg { width: 26px; height: 26px; fill: #2b74f6; }
+.recent-title { font-size: 17px; line-height: 1.25; font-weight: 800; color: #0f172a; }
+.recent-subtitle { font-size: 13px; font-weight: 700; color: #94a3b8; margin-top: 4px; }
+.recent-list { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 14px 14px calc(16px + env(safe-area-inset-bottom)) 14px; display: flex; flex-direction: column; gap: 10px; }
+.recent-list:empty { display: none; }
+.recent-sheet.is-empty .recent-head { border-bottom: none; padding-bottom: calc(24px + env(safe-area-inset-bottom)); }
+.recent-item { display: flex; align-items: center; gap: 14px; background: #f4f5f7; border-radius: 18px; padding: 14px 16px; cursor: pointer; flex-shrink: 0; transition: transform 0.15s ease, background 0.15s ease; }
+.recent-item:active { transform: scale(0.98); background: #eceef2; }
+.recent-logo { width: 44px; height: 24px; object-fit: contain; flex-shrink: 0; }
+.recent-logo-fallback { width: 44px; flex-shrink: 0; text-align: center; font-size: 15px; font-weight: 900; color: #2b74f6; }
+.recent-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.recent-phone { font-size: 17px; font-weight: 800; color: #0f172a; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.recent-date { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #7b8494; }
+.recent-date svg { width: 13px; height: 13px; flex-shrink: 0; }
+.recent-sum { flex-shrink: 0; background: #e3effe; color: #2b74f6; font-size: 15px; font-weight: 800; padding: 8px 14px; border-radius: 14px; }
 </style>
 </head>
 <body>
@@ -1248,7 +1274,7 @@ max-width: 90%;
 <span class="custom-caret"></span>
 </div>
 <div class="transfer-input-icons">
-<svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+<svg viewBox="0 0 24 24" id="open-recent-btn" role="button" aria-label="Последние номера"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
 <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
 </div>
 </div>
@@ -1357,6 +1383,23 @@ max-width: 90%;
     </svg>
     <span>История</span>
 </button>
+</div>
+</div>
+
+<!-- RECENT PAYMENTS SHEET -->
+<div class="recent-overlay" id="recent-overlay">
+<div class="recent-sheet" id="recent-sheet" role="dialog" aria-modal="true" aria-labelledby="recent-title">
+<div class="recent-grab" id="recent-grab">
+<div class="modal-handle"></div>
+<div class="recent-head">
+<div class="recent-head-icon"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></div>
+<div>
+<div class="recent-title" id="recent-title">Ваши платежи по DC (по номеру телефона)</div>
+<div class="recent-subtitle" id="recent-subtitle">Нет недавних платежей</div>
+</div>
+</div>
+</div>
+<div class="recent-list" id="recent-list"></div>
 </div>
 </div>
 
@@ -1723,6 +1766,7 @@ let cleanPhone = phoneVal.trim();
 if (cleanPhone.startsWith('9929')) { cleanPhone = '992' + cleanPhone.slice(4); } else if (!cleanPhone.startsWith('992')) { cleanPhone = '992' + cleanPhone; }
 const newTx = { title: 'DC (по номеру телефона)', cardNumber: '1734***8635', receiver: cleanPhone, sum: `${sumVal} TJS`, time: timeStr, fullDate: dateStrFull, fullTime: timeStr, opNum: opNumber, sumVal: `${sumVal} TJS`, isRefunded: false, isPending: false };
 transactionHistory.unshift(newTx);
+saveRecentPayment(phoneVal, rawSum, now);
 renderHistory();
 viewConfirm.classList.remove('active');
 viewPending.classList.add('active');
@@ -1888,6 +1932,119 @@ const textWidth = tempSpan.getBoundingClientRect().width;
 document.body.removeChild(tempSpan);
 activeCaret.style.left = (16 + textWidth) + 'px';
 }
+/* ===== ПОСЛЕДНИЕ ПЛАТЕЖИ: номера для перевода (иконка с часами в поле номера) ===== */
+const RECENT_KEY = 'dc_wallet_recent_payments_v1';
+const RECENT_LIMIT = 30;
+const RECENT_CLOCK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>';
+const recentOverlay = document.getElementById('recent-overlay');
+const recentSheet = document.getElementById('recent-sheet');
+const recentGrab = document.getElementById('recent-grab');
+const recentList = document.getElementById('recent-list');
+const recentSubtitle = document.getElementById('recent-subtitle');
+const openRecentBtn = document.getElementById('open-recent-btn');
+let recentPayments = loadRecentPayments();
+
+function loadRecentPayments() {
+try {
+const list = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+if (!Array.isArray(list)) return [];
+return list.filter(p => p && typeof p.phone === 'string' && Number.isFinite(p.sum) && Number.isFinite(p.ts)).slice(0, RECENT_LIMIT);
+} catch (e) { return []; }
+}
+function saveRecentPayment(phone, sum, date) {
+const clean = String(phone).trim();
+if (!clean) return;
+recentPayments.unshift({ phone: clean, sum: Math.round(sum * 100) / 100, ts: date.getTime() });
+recentPayments = recentPayments.slice(0, RECENT_LIMIT);
+try { localStorage.setItem(RECENT_KEY, JSON.stringify(recentPayments)); } catch (e) {}
+}
+function formatRecentSum(sum) { return (Number.isInteger(sum) ? String(sum) : sum.toFixed(2)) + ' TJS'; }
+function formatRecentDate(ts) {
+const d = new Date(ts);
+const p = n => String(n).padStart(2, '0');
+return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear() + ' | ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+function renderRecentPayments() {
+recentList.textContent = '';
+recentSubtitle.textContent = recentPayments.length ? 'Выберите номер из списка' : 'Нет недавних платежей';
+recentSheet.classList.toggle('is-empty', recentPayments.length === 0);
+const logo = document.querySelector('img.logo-full-img');
+const logoSrc = logo ? logo.getAttribute('src') : '';
+recentPayments.forEach((p, index) => {
+const row = document.createElement('div');
+row.className = 'recent-item';
+row.dataset.index = index;
+let logoEl;
+if (logoSrc) { logoEl = document.createElement('img'); logoEl.className = 'recent-logo'; logoEl.src = logoSrc; logoEl.alt = 'DC'; }
+else { logoEl = document.createElement('div'); logoEl.className = 'recent-logo-fallback'; logoEl.textContent = 'DC'; }
+const info = document.createElement('div');
+info.className = 'recent-info';
+const phone = document.createElement('div');
+phone.className = 'recent-phone';
+phone.textContent = p.phone;
+const date = document.createElement('div');
+date.className = 'recent-date';
+date.innerHTML = RECENT_CLOCK_SVG;
+date.appendChild(document.createTextNode(formatRecentDate(p.ts)));
+info.append(phone, date);
+const sum = document.createElement('div');
+sum.className = 'recent-sum';
+sum.textContent = formatRecentSum(p.sum);
+row.append(logoEl, info, sum);
+recentList.appendChild(row);
+});
+}
+function openRecentSheet() {
+hideKeyboard();
+renderRecentPayments();
+recentList.scrollTop = 0;
+recentOverlay.classList.add('visible');
+}
+function closeRecentSheet() { recentOverlay.classList.remove('visible'); }
+function pickRecentPayment(index) {
+const p = recentPayments[index];
+if (!p) return;
+inputPhone.value = p.phone;
+inputSum.value = String(p.sum).replace('.', ',');
+closeRecentSheet();
+const sumBox = document.querySelector('.transfer-input-box[data-field="sum"]');
+if (sumBox) sumBox.click();
+}
+if (openRecentBtn) {
+openRecentBtn.addEventListener('click', (e) => { e.stopPropagation(); openRecentSheet(); });
+}
+recentOverlay.addEventListener('click', (e) => {
+e.stopPropagation();
+if (e.target === recentOverlay) { closeRecentSheet(); return; }
+const row = e.target.closest('.recent-item');
+if (row) pickRecentPayment(parseInt(row.dataset.index, 10));
+});
+document.addEventListener('keydown', (e) => {
+if (e.key === 'Escape' && recentOverlay.classList.contains('visible')) closeRecentSheet();
+});
+/* закрытие свайпом вниз за ручку/заголовок шторки */
+let recentDragStartY = null, recentDragDelta = 0;
+recentGrab.addEventListener('pointerdown', (e) => {
+recentDragStartY = e.clientY; recentDragDelta = 0;
+recentSheet.style.transition = 'none';
+recentGrab.setPointerCapture(e.pointerId);
+});
+recentGrab.addEventListener('pointermove', (e) => {
+if (recentDragStartY === null) return;
+recentDragDelta = Math.max(0, e.clientY - recentDragStartY);
+recentSheet.style.transform = 'translateY(' + recentDragDelta + 'px)';
+});
+function endRecentDrag() {
+if (recentDragStartY === null) return;
+const shouldClose = recentDragDelta > 90;
+recentDragStartY = null; recentDragDelta = 0;
+recentSheet.style.transition = '';
+recentSheet.style.transform = '';
+if (shouldClose) closeRecentSheet();
+}
+recentGrab.addEventListener('pointerup', endRecentDrag);
+recentGrab.addEventListener('pointercancel', endRecentDrag);
+
 const nowDisplay = document.getElementById('current-time-display');
 const historyUpdateTime = document.getElementById('history-update-time');
 const statementUpdateTime = document.getElementById('statement-update-time');
